@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const AuthContext = createContext();
 
@@ -7,7 +7,14 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(() => {
+    const savedAuth = localStorage.getItem('auth');
+    return savedAuth ? JSON.parse(savedAuth).userRole : null;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('auth', JSON.stringify({ userRole }));
+  }, [userRole]);
 
   const login = (role) => {
     setUserRole(role);

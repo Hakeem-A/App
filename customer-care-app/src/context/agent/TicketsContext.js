@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { mockTickets } from '../../data/mockData';
 
 const TicketsContext = createContext();
 
@@ -7,7 +8,14 @@ export function useTickets() {
 }
 
 export function TicketsProvider({ children }) {
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState(() => {
+    const savedTickets = localStorage.getItem('tickets');
+    return savedTickets ? JSON.parse(savedTickets) : mockTickets;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tickets', JSON.stringify(tickets));
+  }, [tickets]);
 
   const addTicket = (ticket) => {
     setTickets(prev => [...prev, ticket]);
