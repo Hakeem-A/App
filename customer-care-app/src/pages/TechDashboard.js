@@ -7,7 +7,7 @@ import { Alert, Spinner } from 'react-bootstrap';
 function TechDashboardContent() {
   const { tickets, updateTicket, clients } = useContext(DataContext);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  
 
   useEffect(() => {
     // Simulate loading
