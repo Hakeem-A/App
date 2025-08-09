@@ -13,7 +13,7 @@ function CustomNavbar() {
   };
 
   return (
-    <Navbar bg="light" expand="lg" className="mb-4 px-4">
+    <Navbar bg="primary" expand="lg" className="mb- px-4">
       <Container fluid>
         <Navbar.Brand as={Link} to="/" className="me-auto">
           Customer Care System

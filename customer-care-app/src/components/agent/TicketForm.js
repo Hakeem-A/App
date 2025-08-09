@@ -1,14 +1,36 @@
-import React, { useState } from 'react';
-import { Button, Form, Modal } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Form, Button, Modal } from 'react-bootstrap';
 
-function TicketForm({ show, handleClose, addTicket }) {
+function TicketForm({ show, handleClose, addTicket, ticket }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    clientName: '',
+    clientId: '',
     priority: 'medium',
-    assignedTech: ''
+    status: 'pending'
   });
+
+  // Initialize form with ticket data when in edit mode
+  useEffect(() => {
+    if (ticket) {
+      setFormData({
+        title: ticket.title,
+        description: ticket.description || '',
+        clientId: ticket.clientId,
+        priority: ticket.priority,
+        status: ticket.status
+      });
+    } else {
+      // Reset form when creating new ticket
+      setFormData({
+        title: '',
+        description: '',
+        clientId: '',
+        priority: 'medium',
+        status: 'pending'
+      });
+    }
+  }, [ticket, show]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,28 +39,21 @@ function TicketForm({ show, handleClose, addTicket }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    addTicket({ ...formData, id: Date.now(), status: 'pending' });
+    addTicket(formData);
     handleClose();
-    setFormData({
-      title: '',
-      description: '',
-      clientName: '',
-      priority: 'medium',
-      assignedTech: ''
-    });
   };
 
   return (
     <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>Create New Ticket</Modal.Title>
+        <Modal.Title>{ticket ? 'Edit Ticket' : 'Create New Ticket'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Label>Title</Form.Label>
-            <Form.Control
-              type="text"
+            <Form.Control 
+              type="text" 
               name="title"
               value={formData.title}
               onChange={handleChange}
@@ -48,8 +63,8 @@ function TicketForm({ show, handleClose, addTicket }) {
           
           <Form.Group className="mb-3">
             <Form.Label>Description</Form.Label>
-            <Form.Control
-              as="textarea"
+            <Form.Control 
+              as="textarea" 
               rows={3}
               name="description"
               value={formData.description}
@@ -59,11 +74,11 @@ function TicketForm({ show, handleClose, addTicket }) {
           </Form.Group>
           
           <Form.Group className="mb-3">
-            <Form.Label>Client Name</Form.Label>
-            <Form.Control
-              type="text"
-              name="clientName"
-              value={formData.clientName}
+            <Form.Label>Client ID</Form.Label>
+            <Form.Control 
+              type="text" 
+              name="clientId"
+              value={formData.clientId}
               onChange={handleChange}
               required
             />
@@ -72,7 +87,7 @@ function TicketForm({ show, handleClose, addTicket }) {
           <Form.Group className="mb-3">
             <Form.Label>Priority</Form.Label>
             <Form.Select 
-              name="priority" 
+              name="priority"
               value={formData.priority}
               onChange={handleChange}
             >
@@ -84,14 +99,16 @@ function TicketForm({ show, handleClose, addTicket }) {
           </Form.Group>
           
           <Form.Group className="mb-3">
-            <Form.Label>Assigned Technician</Form.Label>
-            <Form.Control
-              type="text"
-              name="assignedTech"
-              value={formData.assignedTech}
+            <Form.Label>Status</Form.Label>
+            <Form.Select 
+              name="status"
+              value={formData.status}
               onChange={handleChange}
-              required
-            />
+            >
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </Form.Select>
           </Form.Group>
           
           <div className="d-flex justify-content-end">
@@ -99,7 +116,7 @@ function TicketForm({ show, handleClose, addTicket }) {
               Cancel
             </Button>
             <Button variant="primary" type="submit">
-              Create Ticket
+              {ticket ? 'Update Ticket' : 'Create Ticket'}
             </Button>
           </div>
         </Form>

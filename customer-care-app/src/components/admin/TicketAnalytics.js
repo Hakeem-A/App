@@ -1,8 +1,9 @@
 import React from 'react';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
+import { Row, Col, Card } from 'react-bootstrap';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
 function TicketAnalytics() {
   // Mock data for demonstration
@@ -40,6 +41,19 @@ function TicketAnalytics() {
     ],
   };
 
+  const resolutionData = {
+    labels: ['< 1 day', '1-3 days', '3-7 days', '> 7 days'],
+    datasets: [
+      {
+        label: 'Resolution Times',
+        data: [15, 10, 5, 4],
+        backgroundColor: 'rgba(255, 206, 86, 0.7)',
+        borderColor: 'rgba(255, 206, 86, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
+
   const options = {
     responsive: true,
     plugins: {
@@ -53,24 +67,56 @@ function TicketAnalytics() {
     },
   };
 
+  const metrics = [
+    { title: 'Avg Resolution Time', value: '24h 38m' },
+    { title: 'First Response Time', value: '2h 15m' },
+    { title: 'Satisfaction Rate', value: '92%' },
+  ];
+
   return (
-    <div className="row mt-4">
-      <div className="col-md-6">
-        <div className="card mb-4">
-          <div className="card-body">
-            <h5 className="card-title">Status Distribution</h5>
-            <Bar data={statusData} options={options} />
-          </div>
-        </div>
-      </div>
-      <div className="col-md-6">
-        <div className="card mb-4">
-          <div className="card-body">
-            <h5 className="card-title">Priority Distribution</h5>
-            <Bar data={priorityData} options={options} />
-          </div>
-        </div>
-      </div>
+    <div>
+      <Row className="mb-4">
+        {metrics.map((metric, index) => (
+          <Col md={4} key={index}>
+            <Card className="text-center h-100">
+              <Card.Body>
+                <Card.Title>{metric.title}</Card.Title>
+                <Card.Text className="h4">{metric.value}</Card.Text>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+      
+      <Row>
+        <Col md={6}>
+          <Card className="mb-4">
+            <Card.Body>
+              <Card.Title>Status Distribution</Card.Title>
+              <Pie data={statusData} options={options} />
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={6}>
+          <Card className="mb-4">
+            <Card.Body>
+              <Card.Title>Priority Distribution</Card.Title>
+              <Bar data={priorityData} options={options} />
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      
+      <Row>
+        <Col md={12}>
+          <Card className="mb-4">
+            <Card.Body>
+              <Card.Title>Resolution Times</Card.Title>
+              <Bar data={resolutionData} options={options} />
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 }

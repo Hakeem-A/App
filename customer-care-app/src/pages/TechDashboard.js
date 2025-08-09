@@ -1,6 +1,7 @@
 import React from 'react';
 import { TicketsProvider, useTickets } from '../context/agent/TicketsContext';
 import TechnicianTickets from '../components/tech/TechnicianTickets';
+import LeaveManagement from '../components/tech/LeaveManagement';
 
 function TechDashboardContent() {
   const { tickets, updateTicket } = useTickets();
@@ -11,11 +12,18 @@ function TechDashboardContent() {
   
   return (
     <div className="p-4">
-      <h1>Technician Bob</h1>
-      <TechnicianTickets 
-        tickets={assignedTickets} 
-        updateTicket={updateTicket} 
-      />
+      <h1>Technician Dashboard</h1>
+      <div className="row">
+        <div className="col-md-8">
+          <TechnicianTickets
+            tickets={assignedTickets}
+            updateTicket={updateTicket}
+          />
+        </div>
+        <div className="col-md-4">
+          <LeaveManagement />
+        </div>
+      </div>
     </div>
   );
 }
