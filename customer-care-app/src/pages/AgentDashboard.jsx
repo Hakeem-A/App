@@ -1,18 +1,20 @@
 import React, { useState, useContext } from 'react';
 import { Button, Tabs, Tab } from 'react-bootstrap';
 import TicketForm from '../components/agent/TicketForm';
-import TicketsTable from '../components/agent/TicketsTable';
 import ClientForm from '../components/agent/ClientForm';
 import ClientsTable from '../components/agent/ClientsTable';
 import RouterManagement from '../components/agent/RouterManagement';
+import TicketList from '../components/admin/TicketList.jsx';
+import CreateTicketModal from '../components/admin/CreateTicketModal.jsx';
 import { DataContext } from '../context/DataContext';
 
 function AgentDashboardContent() {
-  const [showTicketModal, setShowTicketModal] = useState(false);
-  const [showClientModal, setShowClientModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [editingTicket, setEditingTicket] = useState(null);
+  const [showClientModal, setShowClientModal] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
-  
+
   // Fetch mock data from DataContext
   const { 
     tickets, 
@@ -26,14 +28,33 @@ function AgentDashboardContent() {
     deleteClient
   } = useContext(DataContext);
 
-  const handleOpenTicketModal = () => {
-    setShowTicketModal(true);
+  const handleOpenCreateModal = () => {
+    setShowCreateModal(true);
     setEditingTicket(null);
   };
 
-  const handleCloseTicketModal = () => {
-    setShowTicketModal(false);
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
     setEditingTicket(null);
+  };
+
+  const handleCreateTicket = (newTicket) => {
+    addTicket(newTicket);
+    handleCloseCreateModal();
+  };
+
+  const handleEditTicket = (ticket) => {
+    setEditingTicket(ticket);
+    setShowCreateModal(true);
+  };
+
+  const handleSaveTicket = (ticket) => {
+    if (editingTicket) {
+      updateTicket(editingTicket.id, ticket);
+    } else {
+      addTicket(ticket);
+    }
+    handleCloseCreateModal();
   };
 
   const handleOpenClientModal = () => {
@@ -44,20 +65,6 @@ function AgentDashboardContent() {
   const handleCloseClientModal = () => {
     setShowClientModal(false);
     setEditingClient(null);
-  };
-
-  const handleEditTicket = (ticket) => {
-    setEditingTicket(ticket);
-    setShowTicketModal(true);
-  };
-
-  const handleSaveTicket = (ticket) => {
-    if (editingTicket) {
-      updateTicket(editingTicket.id, ticket);
-    } else {
-      addTicket(ticket);
-    }
-    handleCloseTicketModal();
   };
 
   const handleEditClient = (client) => {
@@ -80,7 +87,7 @@ function AgentDashboardContent() {
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="mb-4"> Agent Dashboard</h2>
           <div>
-            <Button variant="primary" onClick={handleOpenTicketModal} className="me-2">
+            <Button variant="primary" onClick={handleOpenCreateModal} className="me-2">
               Create Ticket
             </Button>
             <Button variant="success" onClick={handleOpenClientModal}>
@@ -96,8 +103,8 @@ function AgentDashboardContent() {
       </div>
 
       <TicketForm 
-        show={showTicketModal} 
-        handleClose={handleCloseTicketModal}
+        show={showCreateModal} 
+        handleClose={handleCloseCreateModal}
         addTicket={handleSaveTicket}
         ticket={editingTicket}
       />
@@ -118,11 +125,7 @@ function AgentDashboardContent() {
             </span>
           }
         >
-          <TicketsTable 
-            tickets={tickets} 
-            handleEdit={handleEditTicket}
-            handleDelete={deleteTicket}
-          />
+          <TicketList tickets={tickets} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </Tab>
         <Tab 
           eventKey="clients" 
@@ -149,6 +152,17 @@ function AgentDashboardContent() {
           <RouterManagement />
         </Tab>
       </Tabs>
+
+      <CreateTicketModal
+        show={showCreateModal}
+        onClose={handleCloseCreateModal}
+        onCreate={handleCreateTicket}
+        technicians={[
+          { id: 1, name: 'Tech A' },
+          { id: 2, name: 'Tech B' },
+          { id: 3, name: 'Tech C' },
+        ]}
+      />
     </div>
   );
 }
