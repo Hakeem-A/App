@@ -1,90 +1,81 @@
-@@ .. @@
- import React from 'react';
--import { Table, Button } from 'react-bootstrap';
-+import { Table, Button, FormControl } from 'react-bootstrap';
-+import { FaSearch } from 'react-icons/fa';
+import React from 'react';
+import { Table, Button, FormControl } from 'react-bootstrap';
+import { FaSearch } from 'react-icons/fa';
 
--function ClientsTable({ clients, handleEdit, handleDelete }) {
-+function ClientsTable({ clients, handleEdit, handleDelete, searchTerm, onSearchChange }) {
-+  const filteredClients = clients.filter(client => {
-+    const searchLower = searchTerm.toLowerCase();
-+    return (
-+      client.name.toLowerCase().includes(searchLower) ||
-+      client.email.toLowerCase().includes(searchLower) ||
-+      client.phone.toLowerCase().includes(searchLower) ||
-+      client.address.toLowerCase().includes(searchLower)
-+    );
-+  });
-+
-   return (
--    <Table striped bordered hover responsive className="mt-4">
-+    <div>
-+      <div className="d-flex align-items-center mb-3">
-+        <div className="position-relative flex-grow-1">
-+          <FaSearch className="position-absolute" style={{ left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6c757d' }} />
-+          <FormControl
-+            type="search"
-+            placeholder="Search clients by name, email, phone, or address..."
-+            className="ps-5"
-+            value={searchTerm}
-+            onChange={e => onSearchChange(e.target.value)}
-+          />
-+        </div>
-+      </div>
-+      <Table striped bordered hover responsive className="mt-4">
-       <thead>
-         <tr>
-           <th>ID</th>
-           <th>Name</th>
--          <th>Contact</th>
-+          <th>Email</th>
-+          <th>Phone</th>
-           <th>Address</th>
--          <th>Router Details</th>
-           <th>Actions</th>
-         </tr>
-       </thead>
-       <tbody>
--        {clients.map(client => (
-+        {filteredClients.map(client => (
-           <tr key={client.id}>
-             <td>{client.id}</td>
-             <td>{client.name}</td>
--            <td>{client.contact}</td>
-+            <td>{client.email}</td>
-+            <td>{client.phone}</td>
-             <td>{client.address}</td>
--            <td>{client.routerDetails}</td>
-             <td>
-               <Button 
-                 variant="outline-primary" 
-                 size="sm" 
-                 onClick={() => handleEdit(client)}
-                 className="me-2"
-               >
-                 Edit
-               </Button>
-               <Button 
-                 variant="outline-danger" 
-                 size="sm" 
-                 onClick={() => handleDelete(client.id)}
-               >
-                 Delete
-               </Button>
-             </td>
-           </tr>
-         ))}
-+        {filteredClients.length === 0 && (
-+          <tr>
-+            <td colSpan="6" className="text-center text-muted">
-+              No clients found matching your search criteria
-+            </td>
-+          </tr>
-+        )}
-       </tbody>
-     </Table>
-+    </div>
-   );
- }
+function ClientsTable({ clients, handleEdit, handleDelete, searchTerm, onSearchChange }) {
+  const filteredClients = clients.filter(client => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      client.name.toLowerCase().includes(searchLower) ||
+      client.email.toLowerCase().includes(searchLower) ||
+      client.phone.toLowerCase().includes(searchLower) ||
+      client.address.toLowerCase().includes(searchLower)
+    );
+  });
 
- export default ClientsTable;
+  return (
+    <div>
+      <div className="d-flex align-items-center mb-3">
+        <div className="position-relative flex-grow-1">
+          <FaSearch className="position-absolute" style={{ left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6c757d' }} />
+          <FormControl
+            type="search"
+            placeholder="Search clients by name, email, phone, or address..."
+            className="ps-5"
+            value={searchTerm}
+            onChange={e => onSearchChange(e.target.value)}
+          />
+        </div>
+      </div>
+      <Table striped bordered hover responsive className="mt-4">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredClients.map(client => (
+          <tr key={client.id}>
+            <td>{client.id}</td>
+            <td>{client.name}</td>
+            <td>{client.email}</td>
+            <td>{client.phone}</td>
+            <td>{client.address}</td>
+            <td>
+              <Button 
+                variant="outline-primary" 
+                size="sm" 
+                onClick={() => handleEdit(client)}
+                className="me-2"
+              >
+                Edit
+              </Button>
+              <Button 
+                variant="outline-danger" 
+                size="sm" 
+                onClick={() => handleDelete(client.id)}
+              >
+                Delete
+              </Button>
+            </td>
+          </tr>
+        ))}
+        {filteredClients.length === 0 && (
+          <tr>
+            <td colSpan="6" className="text-center text-muted">
+              No clients found matching your search criteria
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </Table>
+    </div>
+  );
+}
+
+export default ClientsTable;
