@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Button, Tabs, Tab } from 'react-bootstrap';
+import { Button, Tabs, Tab, Row, Col } from 'react-bootstrap';
 import TicketForm from '../components/agent/TicketForm';
 import ClientForm from '../components/agent/ClientForm';
 import ClientsTable from '../components/agent/ClientsTable';
