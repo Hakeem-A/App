@@ -1,1 +1,4 @@
-/*    /index.html   200
+# Netlify Redirects Configuration
+#
+# Catch-all redirect for 404 errors
+/* /login 302
