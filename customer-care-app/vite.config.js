@@ -6,7 +6,8 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0', // Bind to all network interfaces for deployment
-    open: true
+    open: true,
+    allowedHosts: ['care-systems.onrender.com']
   },
   build: {
     outDir: 'dist'
