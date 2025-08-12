@@ -24,7 +24,16 @@ function CustomNavbar() {
           <Nav>
             {userRole && (
               <Nav.Link as={Link} to={`/${userRole}/dashboard`} className="mx-2">
-                {userRole.charAt(0).toUpperCase() + userRole.slice(1)} 
+                {userRole.charAt(0).toUpperCase() + userRole.slice(1)} Dashboard
+              </Nav.Link>
+            )}
+            {userRole === 'admin' && (
+              <Nav.Link 
+                as={Link}
+                to="/admin/technician-metrics"
+                className="mx-2 text-white"
+              >
+                Technician Metrics
               </Nav.Link>
             )}
             {userRole && (

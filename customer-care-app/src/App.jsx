@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { MetricsProvider } from './context/MetricsContext';
 import AppNavbar from './components/Navbar.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import AgentDashboard from './pages/AgentDashboard.jsx';
@@ -9,6 +10,7 @@ import TechDashboard from './pages/TechDashboard.jsx';
 import ManageUsersPage from './pages/ManageUsersPage.jsx';
 import ViewReportsPage from './pages/ViewReportsPage.jsx';
 import SystemSettingsPage from './pages/SystemSettingsPage.jsx';
+import TechnicianMetricsPage from './pages/TechnicianMetricsPage.jsx';
 
 // ProtectedRoute component to handle role-based access
 function ProtectedRoute({ role, children }) {
@@ -84,6 +86,12 @@ function Layout() {
           </ProtectedRoute>
         } />
         
+        <Route path="/admin/technician-metrics" element={
+          <ProtectedRoute role="admin">
+            <TechnicianMetricsPage />
+          </ProtectedRoute>
+        } />
+        
         <Route path="/tech/dashboard" element={
           <ProtectedRoute role="tech">
             <TechDashboard />
@@ -98,11 +106,13 @@ function Layout() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Layout />
-      </Router>
-    </AuthProvider>
+    <Router>
+      <MetricsProvider>
+        <AuthProvider>
+          <Layout />
+        </AuthProvider>
+      </MetricsProvider>
+    </Router>
   );
 }
 
