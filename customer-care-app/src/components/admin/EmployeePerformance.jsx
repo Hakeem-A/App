@@ -10,77 +10,126 @@ function EmployeePerformance() {
   const [performanceData, setPerformanceData] = useState([]);
 
   useEffect(() => {
-    // Generate mock performance data
-    const mockData = [
-      {
-        id: 1,
-        name: 'Sarah Johnson',
-        role: 'Agent',
-        ticketsCreated: 25,
-        ticketsResolved: 22,
-        avgResponseTime: '2.5h',
-        clientSatisfaction: 4.8,
-        efficiency: 88,
-        totalHours: 40
-      },
+    const generateMonthlyTechData = () => [
       {
         id: 2,
         name: 'Mike Wilson',
         role: 'Technician',
         ticketsCreated: 0,
-        ticketsResolved: 18,
-        avgResponseTime: '1.2h',
+        ticketsResolved: 72, // 18*4 weeks
+        avgResponseTime: '1.1h',
         clientSatisfaction: 4.9,
-        efficiency: 95,
-        totalHours: 38
-      },
-      {
-        id: 3,
-        name: 'Lisa Chen',
-        role: 'Agent',
-        ticketsCreated: 30,
-        ticketsResolved: 28,
-        avgResponseTime: '3.1h',
-        clientSatisfaction: 4.6,
-        efficiency: 85,
-        totalHours: 42
+        efficiency: 96,
+        totalHours: 152
       },
       {
         id: 4,
         name: 'David Kim',
-        role: 'Technician',
+        role: 'Technician', 
         ticketsCreated: 0,
-        ticketsResolved: 15,
-        avgResponseTime: '1.8h',
-        clientSatisfaction: 4.7,
-        efficiency: 90,
-        totalHours: 35
+        ticketsResolved: 60, // 15*4
+        avgResponseTime: '1.6h',
+        clientSatisfaction: 4.8,
+        efficiency: 93,
+        totalHours: 140
       },
       {
         id: 5,
         name: 'Emily Brown',
         role: 'Technician',
         ticketsCreated: 0,
-        ticketsResolved: 20,
-        avgResponseTime: '1.5h',
-        clientSatisfaction: 4.9,
-        efficiency: 92,
-        totalHours: 40
+        ticketsResolved: 80, // 20*4
+        avgResponseTime: '1.3h', 
+        clientSatisfaction: 5.0,
+        efficiency: 94,
+        totalHours: 160
       },
       {
-        id: 6,
-        name: 'Robert Davis',
-        role: 'Agent',
-        ticketsCreated: 22,
-        ticketsResolved: 20,
-        avgResponseTime: '2.8h',
-        clientSatisfaction: 4.5,
-        efficiency: 82,
-        totalHours: 39
+        id: 7,
+        name: 'James Smith',
+        role: 'Technician',
+        ticketsCreated: 0,
+        ticketsResolved: 65,
+        avgResponseTime: '1.4h',
+        clientSatisfaction: 4.7,
+        efficiency: 91,
+        totalHours: 150
       }
     ];
-    
-    setPerformanceData(mockData);
+
+    const data = selectedPeriod === 'month' 
+      ? generateMonthlyTechData()
+      : [
+          // Original weekly data
+          {
+            id: 1,
+            name: 'Sarah Johnson',
+            role: 'Agent',
+            ticketsCreated: 25,
+            ticketsResolved: 22,
+            avgResponseTime: '2.5h',
+            clientSatisfaction: 4.8,
+            efficiency: 88,
+            totalHours: 40
+          },
+          {
+            id: 2,
+            name: 'Mike Wilson',
+            role: 'Technician',
+            ticketsCreated: 0,
+            ticketsResolved: 18,
+            avgResponseTime: '1.2h',
+            clientSatisfaction: 4.9,
+            efficiency: 95,
+            totalHours: 38
+          },
+          {
+            id: 3,
+            name: 'Lisa Chen',
+            role: 'Agent',
+            ticketsCreated: 30,
+            ticketsResolved: 28,
+            avgResponseTime: '3.1h',
+            clientSatisfaction: 4.6,
+            efficiency: 85,
+            totalHours: 42
+          },
+          {
+            id: 4,
+            name: 'David Kim',
+            role: 'Technician',
+            ticketsCreated: 0,
+            ticketsResolved: 15,
+            avgResponseTime: '1.8h',
+            clientSatisfaction: 4.7,
+            efficiency: 90,
+            totalHours: 35
+          },
+          {
+            id: 5,
+            name: 'Emily Brown',
+            role: 'Technician',
+            ticketsCreated: 0,
+            ticketsResolved: 20,
+            avgResponseTime: '1.5h',
+            clientSatisfaction: 4.9,
+            efficiency: 92,
+            totalHours: 40
+          },
+          {
+            id: 6,
+            name: 'Robert Davis',
+            role: 'Agent',
+            ticketsCreated: 22,
+            ticketsResolved: 20,
+            avgResponseTime: '2.8h',
+            clientSatisfaction: 4.5,
+            efficiency: 82,
+            totalHours: 39
+          }
+        ];
+
+    setPerformanceData(data);
   }, [selectedPeriod]);
 
   const getRoleBadge = (role) => {
@@ -215,7 +264,7 @@ function EmployeePerformance() {
         <Col md={6}>
           <Card>
             <Card.Body>
-              <Card.Title>Efficiency Trends</Card.Title>
+              <Card.Title>{selectedPeriod === 'month' ? 'Monthly ' : ''}Efficiency Trends</Card.Title>
               <Line data={efficiencyChartData} options={chartOptions} />
             </Card.Body>
           </Card>

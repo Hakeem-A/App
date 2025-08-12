@@ -4,6 +4,7 @@ import TicketAnalytics from '../components/admin/TicketAnalytics';
 import ActivityLog from '../components/admin/ActivityLog';
 import TicketList from '../components/admin/TicketList.jsx';
 import CreateTicketModal from '../components/admin/CreateTicketModal.jsx';
+import EmployeePerformance from '../components/admin/EmployeePerformance';
 
 function AdminDashboard() {
   const [tickets, setTickets] = useState([
@@ -158,6 +159,16 @@ function AdminDashboard() {
         </Col>
         <Col md={4}>
           <ActivityLog />
+        </Col>
+      </Row>
+
+      <Row className="mb-4">
+        <Col md={12}>
+          <Card>
+            <Card.Body>
+              <EmployeePerformance />
+            </Card.Body>
+          </Card>
         </Col>
       </Row>
 
