@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Navbar, Nav, Button } from 'react-bootstrap';
+import { Container, Navbar, Nav, Button, NavDropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,13 +28,36 @@ function CustomNavbar() {
               </Nav.Link>
             )}
             {userRole === 'admin' && (
-              <Nav.Link 
-                as={Link}
-                to="/admin/technician-metrics"
-                className="mx-2 text-white"
-              >
-                Technician Metrics
-              </Nav.Link>
+              <>
+                <Nav.Link 
+                  as={Link}
+                  to="/admin/manage-users"
+                  className="mx-2 text-white"
+                >
+                  Manage Users
+                </Nav.Link>
+                <Nav.Link 
+                  as={Link}
+                  to="/admin/system-settings"
+                  className="mx-2 text-white"
+                >
+                  System Settings
+                </Nav.Link>
+                <Nav.Link 
+                  as={Link}
+                  to="/admin/view-reports"
+                  className="mx-2 text-white"
+                >
+                  View Reports
+                </Nav.Link>
+                <Nav.Link 
+                  as={Link}
+                  to="/admin/technician-metrics"
+                  className="mx-2 text-white"
+                >
+                  Technician Metrics
+                </Nav.Link>
+              </>
             )}
             {userRole && (
               <Button variant="outline-danger" onClick={handleLogout} className="ms-2">
