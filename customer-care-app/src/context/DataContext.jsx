@@ -1,104 +1,106 @@
-import React, { createContext, useState } from 'react';
-import {
-  generateTickets,
-  generateClients,
-  generateTechnicians,
-  generateRouters,
-  generateActivities,
-  generateAnalytics
-} from '../data/mockDataGenerator';
+import { createContext, useContext, useState, useEffect } from 'react';
 
-export const DataContext = createContext();
+const DataContext = createContext();
+
+export { DataContext };
 
 export const DataProvider = ({ children }) => {
-  // Generate mock data
-  const [tickets, setTickets] = useState(generateTickets(150));
-  const [clients, setClients] = useState(generateClients(150));
-  const [technicians] = useState(generateTechnicians(30));
-  const [routers, setRouters] = useState(generateRouters(100));
-  const [activities, setActivities] = useState(generateActivities(200));
-  const [analytics] = useState(generateAnalytics());
+  const [users, setUsers] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [metrics, setMetrics] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Ticket CRUD operations
-  const addTicket = (ticket) => {
-    const newTicket = { ...ticket, id: Date.now() };
-    setTickets([...tickets, newTicket]);
-    return newTicket;
+  const getData = async () => {
+    try {
+      // Enhanced mock user data with complete structure
+      const mockUsers = [
+        { id: 1, name: 'John Doe', email: 'john.doe@company.com', role: 'admin', status: 'active' },
+        { id: 2, name: 'Jane Smith', email: 'jane.smith@company.com', role: 'agent', status: 'active' },
+        { id: 3, name: 'Mike Johnson', email: 'mike.johnson@company.com', role: 'technician', status: 'active' },
+        { id: 4, name: 'Sarah Williams', email: 'sarah.williams@company.com', role: 'agent', status: 'inactive' },
+        { id: 5, name: 'David Brown', email: 'david.brown@company.com', role: 'technician', status: 'active' }
+      ];
+      
+      const mockTickets = [
+        { id: 1, title: 'Technical Issue', status: 'Open' },
+        { id: 2, title: 'Software Bug', status: 'In Progress' }
+      ];
+
+      const mockMetrics = {
+        totalTickets: 15,
+        openTickets: 5,
+        resolvedTickets: 10
+      };
+
+      setUsers(mockUsers);
+      setTickets(mockTickets);
+      setMetrics(mockMetrics);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
   };
 
-  const updateTicket = (id, updates) => {
-    setTickets(tickets.map(ticket =>
-      ticket.id === id ? { ...ticket, ...updates } : ticket
-    ));
+  // Add user function
+  const addUser = async (userData) => {
+    try {
+      const newUser = {
+        ...userData,
+        id: Math.max(...users.map(u => u.id), 0) + 1,
+        status: userData.status || 'active'
+      };
+      setUsers(prevUsers => [...prevUsers, newUser]);
+      return { success: true };
+    } catch (error) {
+      console.error('Error adding user:', error);
+      return { success: false, error: error.message };
+    }
   };
 
-  const deleteTicket = (id) => {
-    setTickets(tickets.filter(ticket => ticket.id !== id));
+  // Update user function
+  const updateUser = async (userId, userData) => {
+    try {
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId ? { ...user, ...userData } : user
+        )
+      );
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return { success: false, error: error.message };
+    }
   };
 
-  // Client CRUD operations
-  const addClient = (client) => {
-    const newClient = { ...client, id: Date.now() };
-    setClients([...clients, newClient]);
-    return newClient;
+  // Delete user function
+  const deleteUser = async (userId) => {
+    try {
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return { success: false, error: error.message };
+    }
   };
 
-  const updateClient = (id, updates) => {
-    setClients(clients.map(client =>
-      client.id === id ? { ...client, ...updates } : client
-    ));
-  };
-
-  const deleteClient = (id) => {
-    setClients(clients.filter(client => client.id !== id));
-  };
-
-  // Router CRUD operations
-  const addRouter = (router) => {
-    const newRouter = { ...router, id: Date.now() };
-    setRouters([...routers, newRouter]);
-    return newRouter;
-  };
-
-  const updateRouter = (id, updates) => {
-    setRouters(routers.map(router =>
-      router.id === id ? { ...router, ...updates } : router
-    ));
-  };
-
-  const deleteRouter = (id) => {
-    setRouters(routers.filter(router => router.id !== id));
-  };
-
-  // Activity log operations
-  const addActivity = (activity) => {
-    const newActivity = { ...activity, id: Date.now(), timestamp: new Date().toLocaleString() };
-    setActivities([newActivity, ...activities]);
-    return newActivity;
-  };
-
-  // Context value
-  const value = {
-    tickets,
-    clients,
-    technicians,
-    routers,
-    activities,
-    analytics,
-    addTicket,
-    updateTicket,
-    deleteTicket,
-    addClient,
-    updateClient,
-    deleteClient,
-    addRouter,
-    updateRouter,
-    deleteRouter,
-    addActivity
-  };
+  useEffect(() => {
+    getData();
+  }, []);
 
   return (
-    <DataContext.Provider value={value}>
+    <DataContext.Provider value={{
+      users,
+      tickets,
+      metrics,
+      loading,
+      error,
+      getData,
+      addUser,
+      updateUser,
+      deleteUser
+    }}>
       {children}
     </DataContext.Provider>
   );
