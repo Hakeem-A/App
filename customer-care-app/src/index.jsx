@@ -10,12 +10,12 @@ import { DataProvider } from './context/DataContext.jsx';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <DarkModeProvider>
-      <AuthProvider>
-        <DataProvider>
+    <AuthProvider>
+      <DataProvider>
+        <DarkModeProvider>
           <App />
-        </DataProvider>
-      </AuthProvider>
-    </DarkModeProvider>
+        </DarkModeProvider>
+      </DataProvider>
+    </AuthProvider>
   </React.StrictMode>
 );

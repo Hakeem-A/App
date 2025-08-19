@@ -7,6 +7,8 @@ export { DataContext };
 export const DataProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [routers, setRouters] = useState([]);
   const [metrics, setMetrics] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +29,16 @@ export const DataProvider = ({ children }) => {
         { id: 2, title: 'Software Bug', status: 'In Progress' }
       ];
 
+      const mockClients = [
+        { id: 1, name: 'Client A', address: '123 Main St', status: 'active' },
+        { id: 2, name: 'Client B', address: '456 Oak Ave', status: 'active' }
+      ];
+
+      const mockRouters = [
+        { id: 1, model: 'TP-Link AX3000', clientId: 1, status: 'online' },
+        { id: 2, model: 'Netgear Nighthawk', clientId: 2, status: 'offline' }
+      ];
+
       const mockMetrics = {
         totalTickets: 15,
         openTickets: 5,
@@ -35,6 +47,8 @@ export const DataProvider = ({ children }) => {
 
       setUsers(mockUsers);
       setTickets(mockTickets);
+      setClients(mockClients);
+      setRouters(mockRouters);
       setMetrics(mockMetrics);
       setLoading(false);
     } catch (err) {
@@ -85,6 +99,86 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Client management functions
+  const addClient = async (clientData) => {
+    try {
+      const newClient = {
+        ...clientData,
+        id: Math.max(...clients.map(c => c.id), 0) + 1,
+        status: clientData.status || 'active'
+      };
+      setClients(prevClients => [...prevClients, newClient]);
+      return { success: true };
+    } catch (error) {
+      console.error('Error adding client:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updateClient = async (clientId, clientData) => {
+    try {
+      setClients(prevClients => 
+        prevClients.map(client => 
+          client.id === clientId ? { ...client, ...clientData } : client
+        )
+      );
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating client:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const deleteClient = async (clientId) => {
+    try {
+      setClients(prevClients => prevClients.filter(client => client.id !== clientId));
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Router management functions
+  const addRouter = async (routerData) => {
+    try {
+      const newRouter = {
+        ...routerData,
+        id: Math.max(...routers.map(r => r.id), 0) + 1,
+        status: routerData.status || 'offline'
+      };
+      setRouters(prevRouters => [...prevRouters, newRouter]);
+      return { success: true };
+    } catch (error) {
+      console.error('Error adding router:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updateRouter = async (routerId, routerData) => {
+    try {
+      setRouters(prevRouters => 
+        prevRouters.map(router => 
+          router.id === routerId ? { ...router, ...routerData } : router
+        )
+      );
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating router:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const deleteRouter = async (routerId) => {
+    try {
+      setRouters(prevRouters => prevRouters.filter(router => router.id !== routerId));
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting router:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   useEffect(() => {
     getData();
   }, []);
@@ -93,13 +187,21 @@ export const DataProvider = ({ children }) => {
     <DataContext.Provider value={{
       users,
       tickets,
+      clients,
+      routers,
       metrics,
       loading,
       error,
       getData,
       addUser,
       updateUser,
-      deleteUser
+      deleteUser,
+      addClient,
+      updateClient,
+      deleteClient,
+      addRouter,
+      updateRouter,
+      deleteRouter
     }}>
       {children}
     </DataContext.Provider>

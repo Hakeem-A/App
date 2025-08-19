@@ -11,12 +11,17 @@ import ManageUsersPage from './pages/ManageUsersPage.jsx';
 import ViewReportsPage from './pages/ViewReportsPage.jsx';
 import SystemSettingsPage from './pages/SystemSettingsPage.jsx';
 import TechnicianMetricsPage from './pages/TechnicianMetricsPage.jsx';
+import MapComponent from './components/MapComponent.jsx';
 
 // ProtectedRoute component to handle role-based access
 function ProtectedRoute({ role, children }) {
   const { userRole } = useAuth();
   
-  if (userRole !== role) {
+  if (!userRole) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (role && userRole !== role) {
     return <Navigate to="/login" replace />;
   }
   
@@ -95,6 +100,12 @@ function Layout() {
         <Route path="/tech/dashboard" element={
           <ProtectedRoute role="tech">
             <TechDashboard />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/map" element={
+          <ProtectedRoute role={null}>
+            <MapComponent />
           </ProtectedRoute>
         } />
         

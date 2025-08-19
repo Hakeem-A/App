@@ -23,9 +23,14 @@ function CustomNavbar() {
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
           <Nav>
             {userRole && (
-              <Nav.Link as={Link} to={`/${userRole}/dashboard`} className="mx-2">
-                {userRole.charAt(0).toUpperCase() + userRole.slice(1)} Dashboard
-              </Nav.Link>
+              <>
+                <Nav.Link as={Link} to={`/${userRole}/dashboard`} className="mx-2">
+                  {userRole.charAt(0).toUpperCase() + userRole.slice(1)} Dashboard
+                </Nav.Link>
+                <Nav.Link as={Link} to="/map" className="mx-2">
+                  Map
+                </Nav.Link>
+              </>
             )}
             {userRole === 'admin' && (
               <>
