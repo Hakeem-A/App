@@ -35,8 +35,9 @@ function LeaveManagement() {
       
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
-          <Form.Label>Date</Form.Label>
+          <Form.Label htmlFor="leave-date">Date</Form.Label>
           <Form.Control 
+            id="leave-date"
             type="date" 
             name="date"
             value={newLeave.date}
@@ -46,8 +47,9 @@ function LeaveManagement() {
         </Form.Group>
         
         <Form.Group className="mb-3">
-          <Form.Label>Reason</Form.Label>
+          <Form.Label htmlFor="leave-reason">Reason</Form.Label>
           <Form.Control 
+            id="leave-reason"
             as="textarea" 
             rows={2}
             name="reason"

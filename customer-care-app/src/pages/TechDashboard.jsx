@@ -17,18 +17,18 @@ function TechDashboardContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Filter tickets assigned to the current technician
-  const assignedTickets = tickets.filter(ticket => {
-    // In a real app, use actual technician ID from auth
-    const currentTechId = 1; // Simulating current logged-in tech
-    return ticket.assignedTech === currentTechId;
-  });
+      // Filter tickets assigned to the current technician
+      const assignedTickets = tickets.filter(ticket => {
+        // In a real app, use actual technician ID from auth
+        const currentTechId = 1; // Simulating current logged-in tech
+        return ticket.assignedTech === currentTechId;
+      });
 
-  // Enhance tickets with client names
-  const enhancedTickets = assignedTickets.map(ticket => ({
-    ...ticket,
-    clientName: clients.find(client => client.id === ticket.clientId)?.name || 'Unknown Client'
-  }));
+      // Enhance tickets with client names
+      const enhancedTickets = assignedTickets.map(ticket => ({
+        ...ticket,
+        clientName: clients.find(client => client.id === ticket.clientId)?.name || 'Unknown Client'
+      }));
 
   if (loading) {
     return (

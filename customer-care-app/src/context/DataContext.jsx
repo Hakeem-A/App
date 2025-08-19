@@ -25,8 +25,66 @@ export const DataProvider = ({ children }) => {
       ];
       
       const mockTickets = [
-        { id: 1, title: 'Technical Issue', status: 'Open' },
-        { id: 2, title: 'Software Bug', status: 'In Progress' }
+        {
+          id: 1,
+          title: "Internet Connection Issue",
+          description: "Client reports intermittent internet disconnections",
+          clientId: 1,
+          priority: "high",
+          assignedTech: 1,
+          status: "in-progress",
+          createdAt: "2025-08-01",
+          timeSpent: 45,
+          comments: [
+            {
+              id: 1,
+              text: "Initial diagnosis completed. Checking router configuration.",
+              timestamp: "2025-08-01T10:30:00Z"
+            }
+          ]
+        },
+        {
+          id: 2,
+          title: "Router Configuration",
+          description: "Need help setting up new router",
+          clientId: 2,
+          priority: "medium",
+          assignedTech: 1,
+          status: "pending",
+          createdAt: "2025-08-03",
+          timeSpent: 0,
+          comments: []
+        },
+        {
+          id: 3,
+          title: "Slow Internet Speed",
+          description: "Client experiencing slower than advertised speeds",
+          clientId: 3,
+          priority: "critical",
+          assignedTech: 2,
+          status: "completed",
+          createdAt: "2025-08-05",
+          timeSpent: 120,
+          comments: [
+            {
+              id: 2,
+              text: "Speed test performed. Issue resolved by replacing ethernet cable.",
+              timestamp: "2025-08-05T14:15:00Z"
+            }
+          ]
+        },
+        {
+          id: 4,
+          title: "WiFi Signal Weak",
+          description: "WiFi signal is very weak in certain rooms",
+          clientId: 1,
+          priority: "medium",
+          assignedTech: 1,
+          status: "pending",
+          createdAt: "2025-08-06",
+          timeSpent: 0,
+          comments: []
+        }
       ];
 
       const mockClients = [
