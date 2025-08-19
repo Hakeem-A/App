@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Modal, FloatingLabel } from 'react-bootstrap';
 
-const UserForm = ({ initialData, onSubmit, onCancel }) => {
+const UserForm = ({ user, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -46,7 +46,7 @@ const UserForm = ({ initialData, onSubmit, onCancel }) => {
     if (Object.keys(newErrors).length === 0) {
       onSubmit({
         ...formData,
-        id: initialData?.id // Preserve ID if editing
+        id: user?.id // Preserve ID if editing
       });
     }
   };
