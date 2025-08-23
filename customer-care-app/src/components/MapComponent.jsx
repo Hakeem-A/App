@@ -13,6 +13,7 @@ const MapComponent = () => {
   const [map, setMap] = useState(null);
   const [sites, setSites] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingSite, setEditingSite] = useState(null);
   const [newSite, setNewSite] = useState({
     name: '',
     lat: '',
@@ -162,45 +163,91 @@ const siteIcon = L.icon({
     };
 
     try {
-      // Mock API call - in real app, this would be actual API
-      const newSiteWithId = {
-        ...siteData,
-        id: Date.now()
-      };
-      
-      setSites(prev => [...prev, newSiteWithId]);
-      
-      // Add to map
+      if (editingSite) {
+        // Update existing site
+        const updatedSite = {
+          ...editingSite,
+          ...siteData
+        };
+        
+        setSites(prev => prev.map(s => s.id === editingSite.id ? updatedSite : s));
+        
+        // Update marker on map
+        groupsRef.current.site.eachLayer(layer => {
+          if (layer instanceof L.Marker) {
+            const markerLatLng = layer.getLatLng();
+            if (markerLatLng.lat === editingSite.lat && markerLatLng.lng === editingSite.lng) {
+              // Remove old marker
+              groupsRef.current.site.removeLayer(layer);
+              
+              // Add updated marker
 const siteIcon = L.icon({
   iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDJMMTkuNjYgMTAuOTg3TDI5LjMzIDEzTDIwLjY2IDIwLjYxM0wxNiAzMEwxMS4zNCAyMC42MTNMMi42NyAxM0wxMi4zNCAxMC45ODdMMTYgMloiIGZpbGw9IiM0M0ZGMDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iNCIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4=',
   iconSize: [32, 32],
-        iconAnchor: [12, 24],
-        popupAnchor: [0, -24]
-      });
+                iconAnchor: [12, 24],
+                popupAnchor: [0, -24]
+              });
 
-      const marker = L.marker([newSiteWithId.lat, newSiteWithId.lng], { icon: siteIcon });
-      
-      marker.bindPopup(`
-        <div style="min-width: 200px;">
-          <h5>${newSiteWithId.name}</h5>
-          <p>${newSiteWithId.description}</p>
-          <p><strong>Coordinates:</strong><br>
-          Lat: ${newSiteWithId.lat}<br>
-          Lng: ${newSiteWithId.lng}</p>
-          <button class="btn btn-sm btn-primary" onclick="window.editSite(${newSiteWithId.id})">Edit</button>
-          <button class="btn btn-sm btn-danger ms-2" onclick="window.deleteSite(${newSiteWithId.id})">Delete</button>
-        </div>
-      `);
-      
-      groupsRef.current.site.addLayer(marker);
+              const newMarker = L.marker([updatedSite.lat, updatedSite.lng], { icon: siteIcon });
+              
+              newMarker.bindPopup(`
+                <div style="min-width: 200px;">
+                  <h5>${updatedSite.name}</h5>
+                  <p>${updatedSite.description}</p>
+                  <p><strong>Coordinates:</strong><br>
+                  Lat: ${updatedSite.lat}<br>
+                  Lng: ${updatedSite.lng}</p>
+                  <button class="btn btn-sm btn-primary" onclick="window.editSite(${updatedSite.id})">Edit</button>
+                  <button class="btn btn-sm btn-danger ms-2" onclick="window.deleteSite(${updatedSite.id})">Delete</button>
+                </div>
+              `);
+              
+              groupsRef.current.site.addLayer(newMarker);
+            }
+          }
+        });
+      } else {
+        // Add new site
+        const newSiteWithId = {
+          ...siteData,
+          id: Date.now()
+        };
+        
+        setSites(prev => [...prev, newSiteWithId]);
+        
+        // Add to map
+const siteIcon = L.icon({
+  iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDJMMTkuNjYgMTAuOTg3TDI5LjMzIDEzTDIwLjY2IDIwLjYxM0wxNiAzMEwxMS4zNCAyMC42MTNMMi42NyAxM0wxMi4zNCAxMC45ODdMMTYgMloiIGZpbGw9IiM0M0ZGMDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iNCIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4=',
+  iconSize: [32, 32],
+          iconAnchor: [12, 24],
+          popupAnchor: [0, -24]
+        });
+
+        const marker = L.marker([newSiteWithId.lat, newSiteWithId.lng], { icon: siteIcon });
+        
+        marker.bindPopup(`
+          <div style="min-width: 200px;">
+            <h5>${newSiteWithId.name}</h5>
+            <p>${newSiteWithId.description}</p>
+            <p><strong>Coordinates:</strong><br>
+            Lat: ${newSiteWithId.lat}<br>
+            Lng: ${newSiteWithId.lng}</p>
+            <button class="btn btn-sm btn-primary" onclick="window.editSite(${newSiteWithId.id})">Edit</button>
+            <button class="btn btn-sm btn-danger ms-2" onclick="window.deleteSite(${newSiteWithId.id})">Delete</button>
+          </div>
+        `);
+        
+        groupsRef.current.site.addLayer(marker);
+      }
       
       setNewSite({ name: '', lat: '', lng: '', description: '' });
       setShowAddForm(false);
+      setEditingSite(null);
       
       // Reload all data
       loadData();
     } catch (error) {
-      console.error('Error adding site:', error);
+      console.error('Error adding/updating site:', error);
     }
   };
 
@@ -220,6 +267,49 @@ const siteIcon = L.icon({
       map.off('click', handleMapClick);
     };
   }, [map]);
+
+  // Expose edit and delete functions to global scope for popup buttons
+  useEffect(() => {
+    window.editSite = (siteId) => {
+      const site = sites.find(s => s.id === siteId);
+      if (site) {
+        // Open edit form with site data
+        setNewSite({
+          name: site.name,
+          lat: site.lat.toString(),
+          lng: site.lng.toString(),
+          description: site.description || ''
+        });
+        setShowAddForm(true);
+        setEditingSite(site);
+      }
+    };
+
+    window.deleteSite = (siteId) => {
+      const site = sites.find(s => s.id === siteId);
+      if (site && confirm(`Are you sure you want to delete site: ${site.name}?`)) {
+        // Remove site from state
+        setSites(prev => prev.filter(s => s.id !== siteId));
+        
+        // Remove site marker from map
+        groupsRef.current.site.eachLayer(layer => {
+          if (layer instanceof L.Marker) {
+            const markerLatLng = layer.getLatLng();
+            if (markerLatLng.lat === site.lat && markerLatLng.lng === site.lng) {
+              groupsRef.current.site.removeLayer(layer);
+            }
+          }
+        });
+        
+        alert(`Site ${site.name} has been deleted.`);
+      }
+    };
+
+    return () => {
+      window.editSite = undefined;
+      window.deleteSite = undefined;
+    };
+  }, [sites]);
 
   return (
     <div>
@@ -264,7 +354,7 @@ const siteIcon = L.icon({
       {showAddForm && (
         <div className="card mb-3">
           <div className="card-header">
-            <h5>Add New Site</h5>
+            <h5>{editingSite ? 'Edit Site' : 'Add New Site'}</h5>
           </div>
           <div className="card-body">
             <form onSubmit={handleAddSite}>
@@ -309,11 +399,17 @@ const siteIcon = L.icon({
                   rows="3"
                 />
               </div>
-              <button type="submit" className="btn btn-primary">Add Site</button>
+              <button type="submit" className="btn btn-primary">
+                {editingSite ? 'Update Site' : 'Add Site'}
+              </button>
               <button 
                 type="button" 
                 className="btn btn-secondary ms-2" 
-                onClick={() => setShowAddForm(false)}
+                onClick={() => {
+                  setShowAddForm(false);
+                  setEditingSite(null);
+                  setNewSite({ name: '', lat: '', lng: '', description: '' });
+                }}
               >
                 Cancel
               </button>

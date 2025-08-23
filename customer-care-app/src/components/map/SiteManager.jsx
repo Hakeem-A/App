@@ -3,10 +3,11 @@ import L from 'leaflet';
 import { useAuth } from '../context/AuthContext';
 import AddSiteModal from '../sites/AddSiteModal';
 
-const SiteManager = ({ map, onSiteAdded }) => {
+const SiteManager = ({ map, onSiteAdded, layerGroup }) => {
   const { userRole } = useAuth();
   const [sites, setSites] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingSite, setEditingSite] = useState(null);
   const [newSite, setNewSite] = useState({
     name: '',
     lat: '',
@@ -26,6 +27,28 @@ const SiteManager = ({ map, onSiteAdded }) => {
     // Load existing sites
     loadSites();
   }, [map]);
+
+  // Expose edit and delete functions to global scope for popup buttons
+  useEffect(() => {
+    window.editSite = (siteId) => {
+      const site = sites.find(s => s._id === siteId);
+      if (site) {
+        handleEditClick(site);
+      }
+    };
+
+    window.deleteSite = (siteId) => {
+      const site = sites.find(s => s._id === siteId);
+      if (site) {
+        handleDeleteSite(siteId);
+      }
+    };
+
+    return () => {
+      window.editSite = undefined;
+      window.deleteSite = undefined;
+    };
+  }, [sites]);
 
   const loadSites = async () => {
     try {
@@ -57,11 +80,51 @@ const SiteManager = ({ map, onSiteAdded }) => {
           <p>${site.description}</p>
           <p><strong>Lat:</strong> ${site.lat}</p>
           <p><strong>Lng:</strong> ${site.lng}</p>
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-sm btn-warning" onclick="window.editSite('${site._id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="window.deleteSite('${site._id}')">Delete</button>
+          </div>
         </div>
       `);
 
       marker.addTo(map);
     });
+  };
+
+  const handleDeleteSite = async (siteId) => {
+    if (!window.confirm('Are you sure you want to delete this site?')) return;
+    
+    try {
+      const response = await fetch(`/api/sites/${siteId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete site');
+      }
+
+      setSites(prev => prev.filter(s => s._id !== siteId));
+      layerGroup.clearLayers();
+      renderSitesOnMap(sites.filter(s => s._id !== siteId));
+    } catch (error) {
+      setError(error.message || 'Failed to delete site');
+      console.error('Error deleting site:', error);
+    }
+  };
+
+  const handleEditClick = (site) => {
+    setEditingSite(site);
+    setNewSite({
+      name: site.name,
+      lat: site.lat,
+      lng: site.lng,
+      description: site.description,
+      type: site.type,
+      status: site.status,
+      address: site.address,
+      contact: site.contact
+    });
+    setShowAddForm(true);
   };
 
   const handleAddSite = async (e) => {
@@ -91,23 +154,38 @@ const SiteManager = ({ map, onSiteAdded }) => {
       lng
     };
 
+    const method = editingSite ? 'PUT' : 'POST';
+    const url = editingSite ? `/api/sites/${editingSite._id}` : '/api/sites';
+    
     try {
-      const response = await fetch('/api/sites', {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(siteData)
       });
 
+      const result = await response.json();
       if (!response.ok) {
         throw new Error(result.message || 'Failed to add site');
       }
       
-      setSites(prev => [...prev, result.site]);
-      renderSitesOnMap([result.site]);
-      setNewSite({ name: '', lat: '', lng: '', description: '' });
+      if (editingSite) {
+        setSites(prev => prev.map(s => s._id === editingSite._id ? result.site : s));
+      } else {
+        setSites(prev => [...prev, result.site]);
+      }
+      
+      layerGroup.clearLayers();
+      renderSitesOnMap(editingSite ? 
+        sites.map(s => s._id === editingSite._id ? result.site : s) : 
+        [...sites, result.site]
+      );
+      
+      setNewSite({ name: '', lat: '', lng: '', description: '', type: 'office', status: 'active', address: '', contact: '' });
       setShowAddForm(false);
+      setEditingSite(null);
       onSiteAdded(result.site);
     } catch (error) {
       setError(error.message || 'Failed to add site');
@@ -141,7 +219,7 @@ const SiteManager = ({ map, onSiteAdded }) => {
           <div className="modal-content">
             <div className="card">
               <div className="card-header d-flex justify-content-between align-items-center">
-                <h5>Add New Site</h5>
+                <h5>{editingSite ? 'Edit Site' : 'Add New Site'}</h5>
                 <button 
                   type="button" 
                   className="btn-close" 
@@ -204,13 +282,20 @@ const SiteManager = ({ map, onSiteAdded }) => {
                       className="btn btn-primary"
                       disabled={loading}
                     >
-                      {loading ? 'Adding...' : 'Add Site'}
+                      {loading ? (editingSite ? 'Updating...' : 'Adding...') : (editingSite ? 'Update Site' : 'Add Site')}
                     </button>
                   </div>
+    
                 </form>
               </div>
             </div>
           </div>
+        </div>
+      )}
+      
+      {error && (
+        <div className="alert alert-danger mt-3">
+          {error}
         </div>
       )}
     </div>
