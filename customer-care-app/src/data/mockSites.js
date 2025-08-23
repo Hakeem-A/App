@@ -95,3 +95,43 @@ export const deleteSite = (siteId) => {
     }
   });
 };
+
+// Connection management functions
+export const getConnections = () => {
+  return new Promise((resolve) => {
+    const connections = JSON.parse(localStorage.getItem('siteConnections') || '[]');
+    setTimeout(() => resolve(connections), 100);
+  });
+};
+
+export const addConnection = (fromId, toId) => {
+  return new Promise((resolve) => {
+    const connections = JSON.parse(localStorage.getItem('siteConnections') || '[]');
+    const newConnection = { from: fromId, to: toId };
+    
+    // Check if connection already exists
+    const exists = connections.some(conn => 
+      (conn.from === fromId && conn.to === toId) || 
+      (conn.from === toId && conn.to === fromId)
+    );
+    
+    if (!exists) {
+      connections.push(newConnection);
+      localStorage.setItem('siteConnections', JSON.stringify(connections));
+    }
+    
+    setTimeout(() => resolve(newConnection), 100);
+  });
+};
+
+export const removeConnection = (fromId, toId) => {
+  return new Promise((resolve) => {
+    const connections = JSON.parse(localStorage.getItem('siteConnections') || '[]');
+    const updatedConnections = connections.filter(conn => 
+      !(conn.from === fromId && conn.to === toId)
+    );
+    
+    localStorage.setItem('siteConnections', JSON.stringify(updatedConnections));
+    setTimeout(() => resolve({ from: fromId, to: toId }), 100);
+  });
+};

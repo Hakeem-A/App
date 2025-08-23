@@ -1,72 +1,27 @@
-:root {
-  --primary-color: #61dafb;
-  --background-color: #ffffff;
-  --text-color: #282c34;
-  --card-background: #f5f5f5;
-  --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.dark-mode {
-  --background-color: #282c34;
-  --text-color: #ffffff;
-  --card-background: #1a1a1a;
-  --card-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-/* Base styles */
+/* Existing global styles */
 body {
   margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-#map { 
-  height: 70vh;
-  width: 100%;
-  z-index: 0;
-}
-.leaflet-container {
-  background: var(--map-bg) !important;
-}
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+/* Add pulsing animation for markers */
+.pulsing-marker {
+  animation: pulse 2s infinite;
+  transform-origin: center;
+  filter: drop-shadow(0 0 4px rgba(12, 13, 102, 0.8));
 }
 
-.card {
-  background-color: var(--card-background);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: var(--card-shadow);
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-/* Darker map markers */
-.darkened-marker {
-  filter: brightness(0.7) contrast(1.3);
-}
-
-/* Modal styles */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
+/* Ensure markers stay visible on all layers */
+.leaflet-marker-icon {
+  z-index: 1000 !important;
 }

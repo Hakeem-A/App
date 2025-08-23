@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet-routing-machine';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import { useAuth } from '../context/AuthContext';
 import { useContext } from 'react';
 import { DataContext } from '../context/DataContext';
+import SiteLinkManager from './map/SiteLinkManager';
 
 const MapComponent = () => {
   const mapRef = useRef(null);
@@ -29,7 +32,8 @@ const MapComponent = () => {
     switch: L.layerGroup(),
     adapter: L.layerGroup(),
     site: L.layerGroup(),
-    router: L.layerGroup()
+    router: L.layerGroup(),
+    connections: L.layerGroup() // New layer for site connections
   });
 
   useEffect(() => {
@@ -60,7 +64,8 @@ const MapComponent = () => {
       'Switches': groupsRef.current.switch,
       'Adapter Boxes': groupsRef.current.adapter,
       'Sites': groupsRef.current.site,
-      'Routers': groupsRef.current.router
+      'Routers': groupsRef.current.router,
+      'Connections': groupsRef.current.connections // Add connections to layer control
     };
 
     Object.values(groupsRef.current).forEach(group => group.addTo(leafletMap));
@@ -88,12 +93,13 @@ const MapComponent = () => {
       
       // Add site markers to map
       mockSites.forEach(site => {
-        const siteIcon = L.icon({
-          iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDEzLjc0TDEyIDIwTDEwLjkxIDEzLjc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjRkY2QjZCIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=',
-          iconSize: [24, 24],
-          iconAnchor: [12, 24],
-          popupAnchor: [0, -24]
-        });
+const siteIcon = L.icon({
+  iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDJMMTkuNjYgMTAuOTg3TDI5LjMzIDEzTDIwLjY2IDIwLjYxM0wxNiAzMEwxMS4zNCAyMC42MTNMMi42NyAxM0wxMi4zNCAxMC45ODdMMTYgMloiIGZpbGw9IiM0M0ZGMDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iNCIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4=',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+  className: 'pulsing-marker'
+});
 
         const marker = L.marker([site.lat, site.lng], { icon: siteIcon });
         
@@ -123,13 +129,25 @@ const MapComponent = () => {
         Object.values(groupsRef.current).forEach(g => g.clearLayers());
         const routeCoords = [];
         items.forEach(i => {
-          const marker = L.circleMarker([i.lat, i.lng], { radius: 6 });
-          marker.bindPopup(`<b>${i.type}</b><br>${i.name}`);
-          groupsRef.current[i.type]?.addLayer(marker);
+          if (i.type !== 'route_point') {
+            const marker = L.circleMarker([i.lat, i.lng], { radius: 6 });
+            marker.bindPopup(`<b>${i.type}</b><br>${i.name}`);
+            groupsRef.current[i.type]?.addLayer(marker);
+          }
           if (i.type === 'route_point') routeCoords.push([i.lat, i.lng]);
         });
         if (routeCoords.length) {
-          L.polyline(routeCoords, { weight: 4 }).addTo(groupsRef.current.route_point);
+          L.Routing.control({
+  waypoints: routeCoords.map(coord => L.latLng(coord[0], coord[1])),
+  routeWhileDragging: false,
+  showAlternatives: false,
+  lineOptions: {
+    styles: [{ color: '#00a8ff', weight: 6, opacity: 0.8 }],
+    extendToWaypoints: true,
+    missingRouteTolerance: 10
+  },
+  createMarker: () => null
+}).addTo(groupsRef.current.route_point);
         }
       });
   };
@@ -153,9 +171,9 @@ const MapComponent = () => {
       setSites(prev => [...prev, newSiteWithId]);
       
       // Add to map
-      const siteIcon = L.icon({
-        iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDEzLjc0TDEyIDIwTDEwLjkxIDEzLjc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjRkY2QjZCIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=',
-        iconSize: [24, 24],
+const siteIcon = L.icon({
+  iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDJMMTkuNjYgMTAuOTg3TDI5LjMzIDEzTDIwLjY2IDIwLjYxM0wxNiAzMEwxMS4zNCAyMC42MTNMMi42NyAxM0wxMi4zNCAxMC45ODdMMTYgMloiIGZpbGw9IiM0M0ZGMDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iNCIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4=',
+  iconSize: [32, 32],
         iconAnchor: [12, 24],
         popupAnchor: [0, -24]
       });
@@ -233,6 +251,15 @@ const MapComponent = () => {
           </button>
         )}
       </div>
+
+      {/* Site Link Manager Component */}
+      {sites.length > 0 && (
+        <SiteLinkManager 
+          map={map}
+          sites={sites}
+          layerGroup={groupsRef.current.connections}
+        />
+      )}
       
       {showAddForm && (
         <div className="card mb-3">

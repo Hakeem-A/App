@@ -44,7 +44,7 @@ const SiteManager = ({ map, onSiteAdded }) => {
     sitesData.forEach(site => {
       const marker = L.marker([site.lat, site.lng], {
         icon: L.icon({
-          iconUrl: '/logo192.png',
+          iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzAwN0YwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDEzLjc0TDEyIDIwTDEwLjkxIDEzLjc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjRkY2QjZCIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=',
           iconSize: [40, 40],
           iconAnchor: [20, 40],
           className: 'darkened-marker'
