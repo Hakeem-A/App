@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { MetricsProvider } from './context/MetricsContext';
 import AppNavbar from './components/Navbar.jsx';
@@ -134,6 +136,17 @@ function App() {
       <MetricsProvider>
         <AuthProvider>
           <Layout />
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </AuthProvider>
       </MetricsProvider>
     </Router>

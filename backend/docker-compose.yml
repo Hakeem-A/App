@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=dev-secret-key
+      - JWT_SECRET_KEY=dev-jwt-secret
+      - DATABASE_URL=sqlite:///customer_care.db
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    restart: unless-stopped
+
+  # Optional: Add PostgreSQL for production
+  # postgres:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_DB: customer_care
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+# volumes:
+#   postgres_data:
