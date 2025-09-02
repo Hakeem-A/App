@@ -16,8 +16,23 @@ export function ClientsProvider({ children }) {
     localStorage.setItem('clients', JSON.stringify(clients));
   }, [clients]);
 
-  const addClient = (client) => {
-    setClients(prev => [...prev, { ...client, id: Date.now() }]);
+  const addClient = async (clientData) => {
+    try {
+      const res = await fetch('/api/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clientData)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setClients(prev => [...prev, data]);
+      } else {
+        alert(data.error || 'Failed to add client');
+      }
+    } catch (error) {
+      console.error('Error adding client:', error);
+      alert('Error adding client');
+    }
   };
 
   const updateClient = (id, updatedClient) => {
