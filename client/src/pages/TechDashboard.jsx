@@ -6,6 +6,7 @@ import { Alert, Spinner } from 'react-bootstrap';
 
 function TechDashboardContent() {
   const { tickets, updateTicket, clients } = useContext(DataContext);
+  const {user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error] = useState(null);
 
@@ -17,18 +18,14 @@ function TechDashboardContent() {
     return () => clearTimeout(timer);
   }, []);
 
-      // Filter tickets assigned to the current technician
-      const assignedTickets = tickets.filter(ticket => {
-        // In a real app, use actual technician ID from auth
-        const currentTechId = 1; // Simulating current logged-in tech
-        return ticket.assignedTech === currentTechId;
-      });
+   const currentTechId = user?.id;
 
-      // Enhance tickets with client names
-      const enhancedTickets = assignedTickets.map(ticket => ({
-        ...ticket,
-        clientName: clients.find(client => client.id === ticket.clientId)?.name || 'Unknown Client'
-      }));
+   const assignedTickets = tickets.filter(ticket => ticket.assignedTech === currentTechId);
+
+   const enhancedTickets = assignedTickets.map(ticket => ({
+      ...ticket,
+      clientName: clients.find(client => client.id === ticket.clientId)?.name || 'Unknown Client'
+    }));
 
   if (loading) {
     return (
