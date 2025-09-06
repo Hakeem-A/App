@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Card, Button, Badge, Form, Modal } from 'react-bootstrap';
+import { ticketsAPI } from '../../services/api';
 
-function TechnicianTickets({ tickets, updateTicket }) {
+function TechnicianTickets({ tickets, updateTicket, refreshTickets }) {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [comment, setComment] = useState('');
@@ -28,17 +29,18 @@ function TechnicianTickets({ tickets, updateTicket }) {
     }
   };
   
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (selectedTicket && comment.trim()) {
-      const newComment = {
-        id: Date.now(),
-        text: comment,
-        timestamp: new Date().toISOString()
-      };
-      
-      const updatedComments = [...(selectedTicket.comments || []), newComment];
-      updateTicket(selectedTicket.id, { comments: updatedComments });
-      setComment('');
+      try {
+        await ticketsAPI.addComment(selectedTicket.id, comment);
+        setComment('');
+        // Refresh tickets after adding comment
+        if (typeof refreshTickets === 'function') {
+          refreshTickets();
+        }
+      } catch (error) {
+        console.error('Error adding comment:', error);
+      }
     }
   };
   

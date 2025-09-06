@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Table, Form, Badge, Row, Col, FormControl } from 'react-bootstrap';
 import { FaSearch } from 'react-icons/fa';
+import { routersAPI } from '../../services/api';
 
 function RouterManagement() {
   const [searchTerm, setSearchTerm] = useState('');
-  // Mock router data
-  const [routers, setRouters] = useState([
-    { id: 1, model: 'TP-Link Archer C7', serial: 'SN-001', status: 'Active', location: 'Client A', lastSeen: '2025-08-08 10:15:00' },
-    { id: 2, model: 'Netgear Nighthawk R7000', serial: 'SN-002', status: 'Offline', location: 'Client B', lastSeen: '2025-08-07 14:30:00' },
-    { id: 3, model: 'Asus RT-AC86U', serial: 'SN-003', status: 'Recovery Needed', location: 'Client C', lastSeen: '2025-08-06 09:45:00' },
-  ]);
+  const [routers, setRouters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   const [newRouter, setNewRouter] = useState({
     model: '',
@@ -24,6 +22,22 @@ function RouterManagement() {
     location: ''
   });
 
+  useEffect(() => {
+    const fetchRouters = async () => {
+      try {
+        setLoading(true);
+        const response = await routersAPI.getAll();
+        setRouters(response.data.routers || []);
+      } catch (err) {
+        setError('Failed to load routers');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRouters();
+  }, []);
+
   // Initialize edit form with router data
   useEffect(() => {
     if (editingRouter) {
@@ -31,7 +45,7 @@ function RouterManagement() {
       if (router) {
         setEditFormData({
           model: router.model,
-          serial: router.serial,
+          serial: router.serial_number,
           location: router.location
         });
       }
@@ -48,33 +62,57 @@ function RouterManagement() {
     setEditFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddRouter = () => {
+  const handleAddRouter = async () => {
     if (newRouter.model && newRouter.serial) {
-      setRouters(prev => [
-        ...prev, 
-        { 
-          ...newRouter, 
-          id: Date.now(),
-          status: 'Active',
-          lastSeen: new Date().toLocaleString()
-        }
-      ]);
-      setNewRouter({ model: '', serial: '', location: '' });
+      try {
+        const routerData = {
+          model: newRouter.model,
+          serial_number: newRouter.serial,
+          client_id: 1, // Default to first client, should be made configurable
+          status: 'offline',
+          location: newRouter.location
+        };
+
+        const response = await routersAPI.create(routerData);
+        setRouters(prev => [...prev, response.data.router]);
+        setNewRouter({ model: '', serial: '', location: '' });
+      } catch (err) {
+        setError('Failed to add router');
+        console.error(err);
+      }
     }
   };
 
-  const handleRecoverRouter = (id) => {
-    setRouters(prev => prev.map(router => 
-      router.id === id ? { ...router, status: 'Recovery Pending' } : router
-    ));
+  const handleRecoverRouter = async (id) => {
+    try {
+      await routersAPI.updateStatus(id, 'Recovery Pending');
+      setRouters(prev => prev.map(router =>
+        router.id === id ? { ...router, status: 'Recovery Pending' } : router
+      ));
+    } catch (err) {
+      setError('Failed to update router status');
+      console.error(err);
+    }
   };
 
-  const handleUpdateRouter = () => {
+  const handleUpdateRouter = async () => {
     if (editingRouter) {
-      setRouters(prev => prev.map(router => 
-        router.id === editingRouter ? { ...router, ...editFormData } : router
-      ));
-      setEditingRouter(null);
+      try {
+        const routerData = {
+          model: editFormData.model,
+          serial_number: editFormData.serial,
+          location: editFormData.location
+        };
+
+        const response = await routersAPI.update(editingRouter, routerData);
+        setRouters(prev => prev.map(router =>
+          router.id === editingRouter ? response.data.router : router
+        ));
+        setEditingRouter(null);
+      } catch (err) {
+        setError('Failed to update router');
+        console.error(err);
+      }
     }
   };
 
@@ -86,8 +124,8 @@ function RouterManagement() {
     const searchLower = searchTerm.toLowerCase();
     return (
       router.model.toLowerCase().includes(searchLower) ||
-      router.serial.toLowerCase().includes(searchLower) ||
-      router.location.toLowerCase().includes(searchLower) ||
+      router.serial_number.toLowerCase().includes(searchLower) ||
+      router.location?.toLowerCase().includes(searchLower) ||
       router.status.toLowerCase().includes(searchLower)
     );
   });
@@ -101,6 +139,28 @@ function RouterManagement() {
       default: return <Badge bg="secondary">Unknown</Badge>;
     }
   };
+
+  if (loading) {
+    return (
+      <Card className="mt-4">
+        <Card.Body>
+          <Card.Title>Router Management</Card.Title>
+          <div>Loading routers...</div>
+        </Card.Body>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="mt-4">
+        <Card.Body>
+          <Card.Title>Router Management</Card.Title>
+          <div className="text-danger">{error}</div>
+        </Card.Body>
+      </Card>
+    );
+  }
 
   return (
     <Card className="mt-4">
@@ -198,7 +258,7 @@ function RouterManagement() {
                       value={editFormData.serial}
                       onChange={handleEditInputChange}
                     />
-                  ) : router.serial}
+                  ) : router.serial_number}
                 </td>
                 <td>{getStatusBadge(router.status)}</td>
                 <td>
@@ -211,7 +271,7 @@ function RouterManagement() {
                     />
                   ) : router.location}
                 </td>
-                <td>{router.lastSeen}</td>
+                <td>{router.last_seen ? new Date(router.last_seen).toLocaleString() : 'N/A'}</td>
                 <td>
                   {editingRouter === router.id ? (
                     <div>

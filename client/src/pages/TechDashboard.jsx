@@ -34,11 +34,11 @@ function TechDashboardContent() {
 
   const currentTechId = user?.id;
 
-  const assignedTickets = tickets.filter(ticket => ticket.assignedTo === currentTechId);
+  const assignedTickets = tickets.filter(ticket => ticket.assigned_tech_id === currentTechId);
 
   const enhancedTickets = assignedTickets.map(ticket => ({
     ...ticket,
-    clientName: clients.find(client => client.id === ticket.clientId)?.name || 'Unknown Client'
+    clientName: clients.find(client => client.id === ticket.client_id)?.name || 'Unknown Client'
   }));
 
   const handleUpdateTicket = async (ticketId, ticketData) => {
@@ -49,6 +49,16 @@ function TechDashboardContent() {
     } catch (error) {
       console.error('Error updating ticket:', error);
       setError('Failed to update ticket');
+    }
+  };
+
+  const refreshTickets = async () => {
+    try {
+      const response = await ticketsAPI.getAll();
+      setTickets(response.data.tickets || []);
+    } catch (error) {
+      console.error('Error refreshing tickets:', error);
+      setError('Failed to refresh tickets');
     }
   };
 
@@ -75,7 +85,7 @@ function TechDashboardContent() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>Technician Dashboard</h1>
         <div>
-          <span className="text-muted">Welcome, Technician</span>
+          <span className="text-muted">Welcome, {user?.name || 'Technician'}</span>
         </div>
       </div>
       
@@ -84,6 +94,7 @@ function TechDashboardContent() {
           <TechnicianTickets
             tickets={enhancedTickets}
             updateTicket={handleUpdateTicket}
+            refreshTickets={refreshTickets}
           />
         </div>
         <div className="col-lg-4">

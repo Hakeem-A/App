@@ -6,7 +6,7 @@ import random
 
 def seed_database():
     with app.app_context():
-        # Clear existing data
+        # Clear existing data   
         db.drop_all()
         db.create_all()
         
@@ -36,11 +36,16 @@ def seed_database():
         
         # Create clients
         clients_data = [
-            {'name': 'John Smith', 'email': 'john.smith@example.com', 'phone': '+254-700-123-456', 'address': '123 Main St, Nairobi'},
-            {'name': 'Sarah Williams', 'email': 'sarah.williams@example.com', 'phone': '+254-700-123-457', 'address': '456 Park Ave, Mombasa'},
-            {'name': 'Robert Davis', 'email': 'robert.davis@example.com', 'phone': '+254-700-123-458', 'address': '789 Oak Rd, Kisumu'},
-            {'name': 'Alice Cooper', 'email': 'alice.cooper@example.com', 'phone': '+254-700-123-459', 'address': '321 Pine St, Nakuru'},
-            {'name': 'Bob Wilson', 'email': 'bob.wilson@example.com', 'phone': '+254-700-123-460', 'address': '654 Cedar Ave, Eldoret'},
+            {'name': 'John Kimani', 'email': 'john.kimanih@example.com', 'phone': '+254-700-123-456', 'address': '123 Main St, Nairobi'},
+            {'name': 'Halima Aisha', 'email': 'halima.aisha@example.com', 'phone': '+254-700-123-457', 'address': '456 Park Ave, Mombasa'},
+            {'name': 'Robert Ouko', 'email': 'robert.ouko@example.com', 'phone': '+254-700-123-458', 'address': '789 Oak Rd, Kisumu'},
+            {'name': 'Alice Wanjohi', 'email': 'alice.wanjohi@example.com', 'phone': '+254-700-123-459', 'address': '321 Pine St, Nakuru'},
+            {'name': 'Bob Kiptoo', 'email': 'bob.kiptoo@example.com', 'phone': '+254-700-123-460', 'address': '654 Cedar Ave, Eldoret'},
+            {'name': 'Emily Mueni', 'email': 'emily.mueni@example.com', 'phone': '+254-700-123-461', 'address': '987 Maple Rd, Masinga'},
+            {'name': 'Michael Wanjala', 'email': 'michael.wanjala@example.com', 'phone': '+254-700-123-462', 'address': '543 Birch St, Kisii'},
+            {'name': 'Jessica Mogaka', 'email': 'jessica.mogaka@example.com', 'phone': '+254-700-123-463', 'address': '876 Walnut Ave, Nakuru'},
+            {'name': 'Daniel Ouma', 'email': 'daniel.ouma@example.com', 'phone': '+254-700-123-464', 'address': '210 Pine St, Kisumu'},
+            {'name': 'Laura Kemunto', 'email': 'laura.kemunto@example.com', 'phone': '+254-700-123-465', 'address': '543 Cedar Rd, Nakuru'}
         ]
         
         clients = []
@@ -58,7 +63,7 @@ def seed_database():
         db.session.commit()
         
         # Create routers
-        router_models = ['TP-Link Archer C7', 'Netgear Nighthawk R7000', 'Asus RT-AC86U', 'Linksys EA7500', 'Google Nest Wifi']
+        router_models = ['TP-Link Archer C7', 'Netgear Nighthawk R7000', 'Asus RT-AC86U', 'Linksys EA7500', 'Google Nest Wifi', 'D-Link DIR-882', 'Ubiquiti AmpliFi HD', 'Synology RT2600ac', 'MikroTik hAP ac2', 'Cisco RV340']
         statuses = ['online', 'offline', 'maintenance']
         
         for i, client in enumerate(clients):
@@ -80,6 +85,11 @@ def seed_database():
             {'name': 'Data Center', 'lat': -1.308, 'lng': 36.818, 'description': 'Primary data center', 'type': 'datacenter'},
             {'name': 'Warehouse', 'lat': -1.320, 'lng': 36.830, 'description': 'Storage facility', 'type': 'warehouse'},
             {'name': 'Remote Site', 'lat': -1.325, 'lng': 36.815, 'description': 'Remote monitoring station', 'type': 'remote'},
+            {'name': 'Customer Site', 'lat': -1.310, 'lng': 36.828, 'description': 'Client premises', 'type': 'customer'},
+            {'name': 'Headquarters', 'lat': -1.313, 'lng': 36.823, 'description': 'Primary headquarters building', 'type': 'office'},
+            {'name': 'Branch B', 'lat': -1.316, 'lng': 36.826, 'description': 'Regional branch office', 'type': 'branch'},
+            {'name': 'Data Center 2', 'lat': -1.309, 'lng': 36.819, 'description': 'Secondary data center', 'type': 'datacenter'},
+            {'name': 'Warehouse 2', 'lat': -1.321, 'lng': 36.831, 'description': 'Storage facility', 'type': 'warehouse'},
         ]
         
         for site_data in sites_data:
