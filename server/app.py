@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from flask_jwt_extended import JWTManager
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 from config import Config
 
@@ -13,7 +13,21 @@ app.config.from_object(Config)
 # Initialize extensions
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
-CORS(app)
+
+# Configure CORS to allow React frontend
+CORS(
+    app,
+    resources={r"/api/*": {"origins": "http://localhost:3000"}},
+    supports_credentials=True,
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"]
+)
+
+# Handle preflight requests explicitly (important for JWT-protected routes)
+@app.before_request
+def handle_options():
+    if request.method == "OPTIONS":
+        return "", 200
 
 # Import models after db initialization
 from models import User, Client, Ticket, Router, Site, ActivityLog, TicketComment
@@ -36,26 +50,12 @@ app.register_blueprint(sites_bp, url_prefix='/api/sites')
 app.register_blueprint(routers_bp, url_prefix='/api/routers')
 app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
-    
-    # Create default admin user if none exists
-    if not User.query.filter_by(email='admin@company.com').first():
-        admin_user = User(
-            name='Admin User',
-            email='admin@company.com',
-            password_hash=generate_password_hash('admin123'),
-            role='admin',
-            status='active'
-        )
-        db.session.add(admin_user)
-        db.session.commit()
-
+# Health check endpoint
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'healthy', 'timestamp': datetime.utcnow().isoformat()})
 
+# Error handlers
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({'error': 'Not found'}), 404
@@ -64,6 +64,3 @@ def not_found(error):
 def internal_error(error):
     db.session.rollback()
     return jsonify({'error': 'Internal server error'}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
