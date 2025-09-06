@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Modal } from 'react-bootstrap';
 
-function TicketForm({ show, handleClose, addTicket, ticket }) {
+function TicketForm({ show, handleClose, addTicket, ticket, clients = [] }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    clientId: '',
+    client_id: '',
     priority: 'medium',
     status: 'pending'
   });
@@ -16,7 +16,7 @@ function TicketForm({ show, handleClose, addTicket, ticket }) {
       setFormData({
         title: ticket.title,
         description: ticket.description || '',
-        clientId: ticket.clientId,
+        client_id: ticket.client_id,
         priority: ticket.priority,
         status: ticket.status
       });
@@ -25,7 +25,7 @@ function TicketForm({ show, handleClose, addTicket, ticket }) {
       setFormData({
         title: '',
         description: '',
-        clientId: '',
+        client_id: '',
         priority: 'medium',
         status: 'pending'
       });
@@ -74,14 +74,20 @@ function TicketForm({ show, handleClose, addTicket, ticket }) {
           </Form.Group>
           
           <Form.Group className="mb-3">
-            <Form.Label>Client ID</Form.Label>
-            <Form.Control 
-              type="text" 
-              name="clientId"
-              value={formData.clientId}
+            <Form.Label>Client</Form.Label>
+            <Form.Select
+              name="client_id"
+              value={formData.client_id}
               onChange={handleChange}
               required
-            />
+            >
+              <option value="">Select Client</option>
+              {clients.map(client => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
           
           <Form.Group className="mb-3">

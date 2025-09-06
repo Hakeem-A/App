@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -93,6 +93,7 @@ export const routersAPI = {
 // Analytics API
 export const analyticsAPI = {
   getDashboard: () => api.get('/analytics/dashboard'),
+  getActivityLog: () => api.get('/analytics/dashboard').then(res => ({ data: res.data.recent_activities })),
   getPerformance: (days = 30) => api.get(`/analytics/performance?days=${days}`),
   exportCSV: (type = 'tickets') => api.get(`/analytics/reports/csv?type=${type}`, {
     responseType: 'blob',

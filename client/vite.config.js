@@ -7,7 +7,15 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
     open: true,
-    allowedHosts: ['care-systems.onrender.com']
+    allowedHosts: ['care-systems.onrender.com'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api')
+      }
+    }
   },
   build: {
     outDir: 'dist',

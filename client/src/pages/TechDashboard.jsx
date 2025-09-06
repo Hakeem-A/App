@@ -1,31 +1,56 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { DataContext } from '../context/DataContext';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import TechnicianTickets from '../components/tech/TechnicianTickets';
 import LeaveManagement from '../components/tech/LeaveManagement';
 import { Alert, Spinner } from 'react-bootstrap';
+import { ticketsAPI, clientsAPI } from '../services/api';
 
 function TechDashboardContent() {
-  const { tickets, updateTicket, clients } = useContext(DataContext);
-  const {user } = useAuth();
+  const { user } = useAuth();
+  const [tickets, setTickets] = useState([]);
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [ticketsResponse, clientsResponse] = await Promise.all([
+          ticketsAPI.getAll(),
+          clientsAPI.getAll()
+        ]);
+        setTickets(ticketsResponse.data.tickets || []);
+        setClients(clientsResponse.data.clients || []);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-   const currentTechId = user?.id;
+  const currentTechId = user?.id;
 
-   const assignedTickets = tickets.filter(ticket => ticket.assignedTech === currentTechId);
+  const assignedTickets = tickets.filter(ticket => ticket.assignedTo === currentTechId);
 
-   const enhancedTickets = assignedTickets.map(ticket => ({
-      ...ticket,
-      clientName: clients.find(client => client.id === ticket.clientId)?.name || 'Unknown Client'
-    }));
+  const enhancedTickets = assignedTickets.map(ticket => ({
+    ...ticket,
+    clientName: clients.find(client => client.id === ticket.clientId)?.name || 'Unknown Client'
+  }));
+
+  const handleUpdateTicket = async (ticketId, ticketData) => {
+    try {
+      await ticketsAPI.update(ticketId, ticketData);
+      const response = await ticketsAPI.getAll();
+      setTickets(response.data.tickets || []);
+    } catch (error) {
+      console.error('Error updating ticket:', error);
+      setError('Failed to update ticket');
+    }
+  };
 
   if (loading) {
     return (
@@ -58,7 +83,7 @@ function TechDashboardContent() {
         <div className="col-lg-8">
           <TechnicianTickets
             tickets={enhancedTickets}
-            updateTicket={updateTicket}
+            updateTicket={handleUpdateTicket}
           />
         </div>
         <div className="col-lg-4">
