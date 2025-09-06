@@ -4,8 +4,6 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import { useAuth } from '../context/AuthContext';
-import { useContext } from 'react';
-import { DataContext } from '../context/DataContext';
 import SiteLinkManager from './map/SiteLinkManager';
 
 const MapComponent = () => {
@@ -21,8 +19,7 @@ const MapComponent = () => {
     description: ''
   });
   const { userRole: role } = useAuth();
-  const dataContext = useContext(DataContext);
-  const canAddRouter = dataContext?.canAddRouter || false;
+  const canAddRouter = role === 'admin' || role === 'tech';
   
   const groupsRef = useRef({
     route_point: L.layerGroup(),

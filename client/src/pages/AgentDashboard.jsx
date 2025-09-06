@@ -1,14 +1,20 @@
-import React, { useState, useContext } from 'react';
-import { Button, Tabs, Tab, Row, Col } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Button, Tabs, Tab, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import TicketForm from '../components/agent/TicketForm';
 import ClientForm from '../components/agent/ClientForm';
 import ClientsTable from '../components/agent/ClientsTable';
 import RouterManagement from '../components/agent/RouterManagement';
 import TicketList from '../components/admin/TicketList.jsx';
 import CreateTicketModal from '../components/admin/CreateTicketModal.jsx';
-import { DataContext } from '../context/DataContext';
+import { ticketsAPI, usersAPI, clientsAPI, routersAPI } from '../services/api';
 
 function AgentDashboardContent() {
+  const [tickets, setTickets] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [routers, setRouters] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [ticketSearchTerm, setTicketSearchTerm] = useState('');
   const [clientSearchTerm, setClientSearchTerm] = useState('');
@@ -16,18 +22,33 @@ function AgentDashboardContent() {
   const [showClientModal, setShowClientModal] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
 
-  // Fetch mock data from DataContext
-  const { 
-    tickets, 
-    clients, 
-    routers, 
-    addTicket, 
-    updateTicket, 
-    deleteTicket,
-    addClient,
-    updateClient,
-    deleteClient
-  } = useContext(DataContext);
+  const showAlert = (message, variant = 'success') => {
+    setAlert({ message, variant });
+    setTimeout(() => setAlert(null), 3000);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ticketsResponse, clientsResponse, routersResponse, techniciansResponse] = await Promise.all([
+          ticketsAPI.getAll(),
+          clientsAPI.getAll(),
+          routersAPI.getAll(),
+          usersAPI.getTechnicians()
+        ]);
+        setTickets(ticketsResponse.data.tickets || []);
+        setClients(clientsResponse.data.clients || []);
+        setRouters(routersResponse.data.routers || []);
+        setTechnicians(techniciansResponse.data.technicians || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        showAlert('Failed to load data. Please try again.', 'danger');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleOpenCreateModal = () => {
     setShowCreateModal(true);
@@ -39,23 +60,43 @@ function AgentDashboardContent() {
     setEditingTicket(null);
   };
 
-  const handleCreateTicket = (newTicket) => {
-    addTicket(newTicket);
-    handleCloseCreateModal();
+  const handleCreateTicket = async (ticketData) => {
+    try {
+      if (editingTicket) {
+        await ticketsAPI.update(editingTicket.id, ticketData);
+        showAlert('Ticket updated successfully!');
+      } else {
+        await ticketsAPI.create(ticketData);
+        showAlert('Ticket created successfully!');
+      }
+      const response = await ticketsAPI.getAll();
+      setTickets(response.data.tickets || []);
+      setEditingTicket(null);
+    } catch (error) {
+      console.error('Error saving ticket:', error);
+      showAlert('Failed to save ticket. Please try again.', 'danger');
+    }
   };
+
+  // TODO: Update TicketList and TicketForm components to handle API data structure and CRUD operations properly
 
   const handleEditTicket = (ticket) => {
     setEditingTicket(ticket);
     setShowCreateModal(true);
   };
 
-  const handleSaveTicket = (ticket) => {
-    if (editingTicket) {
-      updateTicket(editingTicket.id, ticket);
-    } else {
-      addTicket(ticket);
+  const handleDeleteTicket = async (ticketId) => {
+    if (window.confirm('Are you sure you want to delete this ticket?')) {
+      try {
+        await ticketsAPI.delete(ticketId);
+        showAlert('Ticket deleted successfully!', 'info');
+        const response = await ticketsAPI.getAll();
+        setTickets(response.data.tickets || []);
+      } catch (error) {
+        console.error('Error deleting ticket:', error);
+        showAlert('Failed to delete ticket. Please try again.', 'danger');
+      }
     }
-    handleCloseCreateModal();
   };
 
   const handleOpenClientModal = () => {
@@ -73,13 +114,37 @@ function AgentDashboardContent() {
     setShowClientModal(true);
   };
 
-  const handleSaveClient = (client) => {
-    if (editingClient) {
-      updateClient(editingClient.id, client);
-    } else {
-      addClient(client);
+  const handleSaveClient = async (clientData) => {
+    try {
+      if (editingClient) {
+        await clientsAPI.update(editingClient.id, clientData);
+        showAlert('Client updated successfully!');
+      } else {
+        await clientsAPI.create(clientData);
+        showAlert('Client created successfully!');
+      }
+      const response = await clientsAPI.getAll();
+      setClients(response.data || []);
+      setEditingClient(null);
+      setShowClientModal(false);
+    } catch (error) {
+      console.error('Error saving client:', error);
+      showAlert('Failed to save client. Please try again.', 'danger');
     }
-    handleCloseClientModal();
+  };
+
+  const handleDeleteClient = async (clientId) => {
+    if (window.confirm('Are you sure you want to delete this client?')) {
+      try {
+        await clientsAPI.delete(clientId);
+        showAlert('Client deleted successfully!', 'info');
+        const response = await clientsAPI.getAll();
+        setClients(response.data || []);
+      } catch (error) {
+        console.error('Error deleting client:', error);
+        showAlert('Failed to delete client. Please try again.', 'danger');
+      }
+    }
   };
 
   return (
@@ -96,7 +161,7 @@ function AgentDashboardContent() {
             </Button>
           </div>
         </div>
-        
+
         <div className="bg-primary p-4 card mb-4">
           <h3>Quick Summary</h3>
           <Row>
@@ -131,8 +196,9 @@ function AgentDashboardContent() {
       <TicketForm 
         show={showCreateModal} 
         handleClose={handleCloseCreateModal}
-        addTicket={handleSaveTicket}
+        addTicket={handleCreateTicket}
         ticket={editingTicket}
+        clients={clients}
       />
 
       <ClientForm 
@@ -156,7 +222,7 @@ function AgentDashboardContent() {
             searchTerm={ticketSearchTerm} 
             onSearchChange={setTicketSearchTerm}
             onEdit={handleEditTicket}
-            onDelete={deleteTicket}
+            onDelete={handleDeleteTicket}
           />
         </Tab>
         <Tab 
@@ -170,7 +236,7 @@ function AgentDashboardContent() {
           <ClientsTable 
             clients={clients} 
             handleEdit={handleEditClient}
-            handleDelete={deleteClient}
+            handleDelete={handleDeleteClient}
             searchTerm={clientSearchTerm}
             onSearchChange={setClientSearchTerm}
           />
@@ -192,13 +258,7 @@ function AgentDashboardContent() {
         onClose={handleCloseCreateModal}
         onCreate={handleCreateTicket}
         ticket={editingTicket}
-        technicians={[
-          { id: 1, name: 'Tech A' },
-          { id: 2, name: 'Tech B' },
-          { id: 3, name: 'Tech C' },
-          { id: 4, name: 'Tech D' },
-          { id: 5, name: 'Tech E' },
-        ]}
+        technicians={technicians}
       />
     </div>
   );
@@ -209,3 +269,4 @@ function AgentDashboard() {
 }
 
 export default AgentDashboard;
+

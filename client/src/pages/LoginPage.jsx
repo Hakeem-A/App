@@ -30,7 +30,14 @@ function LoginPage() {
     if (result.success) {
       // Navigation will be handled by the auth context
       const user = JSON.parse(localStorage.getItem('user'));
-      navigate(`/${user.role}/dashboard`);
+      // Map user roles to correct route paths
+      const roleRoutes = {
+        'admin': '/admin/dashboard',
+        'agent': '/agent/dashboard',
+        'technician': '/tech/dashboard'
+      };
+      const dashboardRoute = roleRoutes[user.role] || '/login';
+      navigate(dashboardRoute);
     } else {
       setError(result.error);
     }
