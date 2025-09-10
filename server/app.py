@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -7,7 +7,7 @@ from datetime import datetime
 import os
 from config import Config
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='client_build', static_url_path='/')
 app.config.from_object(Config)
 
 # Initialize extensions
@@ -49,6 +49,20 @@ app.register_blueprint(users_bp, url_prefix='/api/users')
 app.register_blueprint(sites_bp, url_prefix='/api/sites')
 app.register_blueprint(routers_bp, url_prefix='/api/routers')
 app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
+
+# Serve frontend (single page app). Any non-API route will return index.html from the build.
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_client(path):
+    # Let API routes be handled by blueprints
+    if path.startswith('api'):
+        return not_found(None)
+
+    client_build_dir = os.path.join(os.path.dirname(__file__), 'client_build')
+    # Serve static file if it exists, otherwise return index.html for SPA routing
+    if path != '' and os.path.exists(os.path.join(client_build_dir, path)):
+        return send_from_directory(client_build_dir, path)
+    return send_from_directory(client_build_dir, 'index.html')
 
 # Health check endpoint
 @app.route('/api/health', methods=['GET'])
