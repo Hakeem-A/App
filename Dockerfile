@@ -1,3 +1,12 @@
+# syntax=docker/dockerfile:1
+# Build frontend (Vite) using Node
+FROM node:18 AS frontend
+WORKDIR /src
+COPY client/package*.json ./
+RUN npm ci
+COPY client/ .
+RUN npm run build
+
 FROM python:3.10-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -17,6 +26,10 @@ RUN apt-get update \
 
 # Copy app source
 COPY server/ /app/
+
+# Copy frontend production build into the app
+# Vite outputs to /src/dist in the frontend stage
+COPY --from=frontend /src/dist /app/client_build
 
 EXPOSE 5000
 
