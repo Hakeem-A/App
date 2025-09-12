@@ -4,6 +4,8 @@ import TicketAnalytics from '../components/admin/TicketAnalytics';
 import ActivityLog from '../components/admin/ActivityLog';
 import TicketList from '../components/admin/TicketList.jsx';
 import CreateTicketModal from '../components/admin/CreateTicketModal.jsx';
+import ClientsTable from '../components/agent/ClientsTable.jsx';
+import ClientForm from '../components/agent/ClientForm.jsx';
 import { ticketsAPI, usersAPI, clientsAPI } from '../services/api';
 
 function AdminDashboard() {
@@ -12,8 +14,11 @@ function AdminDashboard() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showClientModal, setShowClientModal] = useState(false);
   const [editingTicket, setEditingTicket] = useState(null);
+  const [editingClient, setEditingClient] = useState(null);
   const [alert, setAlert] = useState(null);
 
   // Fetch tickets and technicians on component mount
@@ -106,6 +111,60 @@ function AdminDashboard() {
     setEditingTicket(null);
   };
 
+  // Client management functions
+  const handleAddClient = () => {
+    setEditingClient(null);
+    setShowClientModal(true);
+  };
+
+  const handleEditClient = (client) => {
+    setEditingClient(client);
+    setShowClientModal(true);
+  };
+
+  const handleDeleteClient = async (clientId) => {
+    if (window.confirm('Are you sure you want to delete this client?')) {
+      try {
+        await clientsAPI.delete(clientId);
+        showAlert('Client deleted successfully!', 'info');
+
+        // Refresh clients list
+        const response = await clientsAPI.getAll();
+        setClients(response.data.clients || []);
+      } catch (error) {
+        console.error('Error deleting client:', error);
+        showAlert('Failed to delete client. Please try again.', 'danger');
+      }
+    }
+  };
+
+  const handleSubmitClient = async (clientData) => {
+    try {
+      if (editingClient) {
+        // Update existing client
+        await clientsAPI.update(editingClient.id, clientData);
+        showAlert('Client updated successfully!');
+      } else {
+        // Create new client
+        await clientsAPI.create(clientData);
+        showAlert('Client created successfully!');
+      }
+
+      // Refresh clients list
+      const response = await clientsAPI.getAll();
+      setClients(response.data.clients || []);
+      setEditingClient(null);
+    } catch (error) {
+      console.error('Error saving client:', error);
+      showAlert('Failed to save client. Please try again.', 'danger');
+    }
+  };
+
+  const handleCloseClientModal = () => {
+    setShowClientModal(false);
+    setEditingClient(null);
+  };
+
   // Get today's tickets
   const todaysTickets = tickets.filter(ticket =>
     ticket.dateAssigned === new Date().toISOString().slice(0, 10)
@@ -191,6 +250,28 @@ function AdminDashboard() {
       </Row>
 
       <Row className="mb-4">
+        <Col md={12}>
+          <Card className="mb-4">
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">Client Management</h5>
+              <Button variant="success" onClick={handleAddClient}>
+                Add New Client
+              </Button>
+            </Card.Header>
+            <Card.Body>
+              <ClientsTable
+                clients={clients}
+                serachTerm={clientSearchTerm}
+                onSearchChange={setClientSearchTerm}
+                handleEdit={handleEditClient}
+                handleDelete={handleDeleteClient}
+              />
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row className="mb-4">
         <Col md={8}>
           <TicketAnalytics />
         </Col>
@@ -206,6 +287,13 @@ function AdminDashboard() {
         ticket={editingTicket}
         technicians={technicians}
         clients={clients}
+      />
+
+      <ClientForm
+        show={showClientModal}
+        handleClose={handleCloseClientModal}
+        addClient={handleSubmitClient}
+        client={editingClient}
       />
     </div>
   );
