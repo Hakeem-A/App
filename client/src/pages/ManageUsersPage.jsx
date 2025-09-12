@@ -75,6 +75,28 @@ const ManageUsersPage = () => {
     setUserToDelete(null);
   };
 
+  const handleSubmitUser = async (userData) => {
+    try {
+      console.log('Submitting user data:', userData); // Debug log
+      if (editingUser) {
+        // Update existing user
+        await usersAPI.update(editingUser.id, userData);
+      } else {
+        // Create new user
+        await usersAPI.create(userData);
+      }
+      // Refresh users list
+      const response = await usersAPI.getAll();
+      setUsers(response.data.users || []);
+      setShowUserForm(false);
+      setEditingUser(null);
+    } catch (err) {
+      console.error('Error saving user:', err);
+      console.error('Error response:', err.response?.data); // Debug log
+      setError('Failed to save user');
+    }
+  };
+
   if (userRole !== 'admin') {
     return (
       <div className="container-main p-5">
@@ -242,11 +264,8 @@ const ManageUsersPage = () => {
       {showUserForm && (
         <UserForm
           user={editingUser}
+          onSubmit={handleSubmitUser}
           onClose={() => {
-            setShowUserForm(false);
-            setEditingUser(null);
-          }}
-          onSubmitSuccess={() => {
             setShowUserForm(false);
             setEditingUser(null);
           }}
