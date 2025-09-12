@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const DataContext = createContext();
-
 export { DataContext };
 
 export const DataProvider = ({ children }) => {
@@ -13,101 +12,39 @@ export const DataProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const API_URL = "http://localhost:5000/api";
+
   const getData = async () => {
     try {
-      // Enhanced mock user data with complete structure
-      const mockUsers = [
-        { id: 1, name: 'John Doe', email: 'john.doe@company.com', role: 'admin', status: 'active' },
-        { id: 2, name: 'Jane Smith', email: 'jane.smith@company.com', role: 'agent', status: 'active' },
-        { id: 3, name: 'Mike Johnson', email: 'mike.johnson@company.com', role: 'technician', status: 'active' },
-        { id: 4, name: 'Sarah Williams', email: 'sarah.williams@company.com', role: 'agent', status: 'inactive' },
-        { id: 5, name: 'David Brown', email: 'david.brown@company.com', role: 'technician', status: 'active' }
-      ];
-      
-      const mockTickets = [
-        {
-          id: 1,
-          title: "Internet Connection Issue",
-          description: "Client reports intermittent internet disconnections",
-          clientId: 1,
-          priority: "high",
-          assignedTech: 1,
-          status: "in-progress",
-          createdAt: "2025-08-01",
-          timeSpent: 45,
-          comments: [
-            {
-              id: 1,
-              text: "Initial diagnosis completed. Checking router configuration.",
-              timestamp: "2025-08-01T10:30:00Z"
-            }
-          ]
-        },
-        {
-          id: 2,
-          title: "Router Configuration",
-          description: "Need help setting up new router",
-          clientId: 2,
-          priority: "medium",
-          assignedTech: 1,
-          status: "pending",
-          createdAt: "2025-08-03",
-          timeSpent: 0,
-          comments: []
-        },
-        {
-          id: 3,
-          title: "Slow Internet Speed",
-          description: "Client experiencing slower than advertised speeds",
-          clientId: 3,
-          priority: "critical",
-          assignedTech: 2,
-          status: "completed",
-          createdAt: "2025-08-05",
-          timeSpent: 120,
-          comments: [
-            {
-              id: 2,
-              text: "Speed test performed. Issue resolved by replacing ethernet cable.",
-              timestamp: "2025-08-05T14:15:00Z"
-            }
-          ]
-        },
-        {
-          id: 4,
-          title: "WiFi Signal Weak",
-          description: "WiFi signal is very weak in certain rooms",
-          clientId: 1,
-          priority: "medium",
-          assignedTech: 1,
-          status: "pending",
-          createdAt: "2025-08-06",
-          timeSpent: 0,
-          comments: []
-        }
-      ];
+      setLoading(true);
 
-      const mockClients = [
-        { id: 1, name: 'Client A', address: '123 Main St', status: 'active' },
-        { id: 2, name: 'Client B', address: '456 Oak Ave', status: 'active' }
-      ];
+      const [usersRes, ticketsRes, clientsRes, routersRes, metricsRes] =
+        await Promise.all([
+          fetch(`${API_URL}/users`),
+          fetch(`${API_URL}/tickets`),
+          fetch(`${API_URL}/clients`),
+          fetch(`${API_URL}/routers`),
+          fetch(`${API_URL}/metrics`)
+        ]);
 
-      const mockRouters = [
-        { id: 1, model: 'TP-Link AX3000', clientId: 1, status: 'online' },
-        { id: 2, model: 'Netgear Nighthawk', clientId: 2, status: 'offline' }
-      ];
+      if (!usersRes.ok || !ticketsRes.ok || !clientsRes.ok || !routersRes.ok || !metricsRes.ok) {
+        throw new Error("Failed to fetch one or more resources");
+      }
 
-      const mockMetrics = {
-        totalTickets: 15,
-        openTickets: 5,
-        resolvedTickets: 10
-      };
+      const [usersData, ticketsData, clientsData, routersData, metricsData] =
+        await Promise.all([
+          usersRes.json(),
+          ticketsRes.json(),
+          clientsRes.json(),
+          routersRes.json(),
+          metricsRes.json()
+        ]);
 
-      setUsers(mockUsers);
-      setTickets(mockTickets);
-      setClients(mockClients);
-      setRouters(mockRouters);
-      setMetrics(mockMetrics);
+      setUsers(usersData);
+      setTickets(ticketsData);
+      setClients(clientsData);
+      setRouters(routersData);
+      setMetrics(metricsData);
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -115,124 +52,49 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  // Add user function
+  // Example CRUD using API
   const addUser = async (userData) => {
     try {
-      const newUser = {
-        ...userData,
-        id: Math.max(...users.map(u => u.id), 0) + 1,
-        status: userData.status || 'active'
-      };
-      setUsers(prevUsers => [...prevUsers, newUser]);
+      const res = await fetch(`${API_URL}/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData)
+      });
+      if (!res.ok) throw new Error("Failed to add user");
+      const newUser = await res.json();
+      setUsers(prev => [...prev, newUser]);
       return { success: true };
     } catch (error) {
-      console.error('Error adding user:', error);
+      console.error("Error adding user:", error);
       return { success: false, error: error.message };
     }
   };
 
-  // Update user function
   const updateUser = async (userId, userData) => {
     try {
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId ? { ...user, ...userData } : user
-        )
-      );
+      const res = await fetch(`${API_URL}/users/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData)
+      });
+      if (!res.ok) throw new Error("Failed to update user");
+      const updatedUser = await res.json();
+      setUsers(prev => prev.map(u => (u.id === userId ? updatedUser : u)));
       return { success: true };
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error("Error updating user:", error);
       return { success: false, error: error.message };
     }
   };
 
-  // Delete user function
   const deleteUser = async (userId) => {
     try {
-      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+      const res = await fetch(`${API_URL}/users/${userId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete user");
+      setUsers(prev => prev.filter(u => u.id !== userId));
       return { success: true };
     } catch (error) {
-      console.error('Error deleting user:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  // Client management functions
-  const addClient = async (clientData) => {
-    try {
-      const newClient = {
-        ...clientData,
-        id: Math.max(...clients.map(c => c.id), 0) + 1,
-        status: clientData.status || 'active'
-      };
-      setClients(prevClients => [...prevClients, newClient]);
-      return { success: true };
-    } catch (error) {
-      console.error('Error adding client:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const updateClient = async (clientId, clientData) => {
-    try {
-      setClients(prevClients => 
-        prevClients.map(client => 
-          client.id === clientId ? { ...client, ...clientData } : client
-        )
-      );
-      return { success: true };
-    } catch (error) {
-      console.error('Error updating client:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const deleteClient = async (clientId) => {
-    try {
-      setClients(prevClients => prevClients.filter(client => client.id !== clientId));
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting client:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  // Router management functions
-  const addRouter = async (routerData) => {
-    try {
-      const newRouter = {
-        ...routerData,
-        id: Math.max(...routers.map(r => r.id), 0) + 1,
-        status: routerData.status || 'offline'
-      };
-      setRouters(prevRouters => [...prevRouters, newRouter]);
-      return { success: true };
-    } catch (error) {
-      console.error('Error adding router:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const updateRouter = async (routerId, routerData) => {
-    try {
-      setRouters(prevRouters => 
-        prevRouters.map(router => 
-          router.id === routerId ? { ...router, ...routerData } : router
-        )
-      );
-      return { success: true };
-    } catch (error) {
-      console.error('Error updating router:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const deleteRouter = async (routerId) => {
-    try {
-      setRouters(prevRouters => prevRouters.filter(router => router.id !== routerId));
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting router:', error);
+      console.error("Error deleting user:", error);
       return { success: false, error: error.message };
     }
   };
@@ -253,15 +115,12 @@ export const DataProvider = ({ children }) => {
       getData,
       addUser,
       updateUser,
-      deleteUser,
-      addClient,
-      updateClient,
-      deleteClient,
-      addRouter,
-      updateRouter,
-      deleteRouter
+      deleteUser
     }}>
       {children}
     </DataContext.Provider>
   );
 };
+
+// Optional: hook to use context
+export const useData = () => useContext(DataContext);

@@ -1,17 +1,36 @@
-import React, { useState, useContext } from 'react';
-import { DataContext } from '../context/DataContext';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { usersAPI } from '../services/api';
 import UserForm from '../components/admin/UserForm';
 
 const ManageUsersPage = () => {
   const { userRole } = useAuth();
-  const { users, loading, error, addUser, updateUser, deleteUser } = useContext(DataContext);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+
+  // Fetch users on component mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await usersAPI.getAll();
+        setUsers(response.data.users || []);
+      } catch (err) {
+        setError('Failed to load users');
+        console.error('Error fetching users:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Filter users based on search term
   const filteredUsers = users.filter(user =>
@@ -37,10 +56,16 @@ const ManageUsersPage = () => {
 
   const handleConfirmDelete = async () => {
     if (userToDelete) {
-      const result = await deleteUser(userToDelete.id);
-      if (result.success) {
+      try {
+        await usersAPI.delete(userToDelete.id);
+        // Refresh users list
+        const response = await usersAPI.getAll();
+        setUsers(response.data.users || []);
         setShowDeleteModal(false);
         setUserToDelete(null);
+      } catch (err) {
+        console.error('Error deleting user:', err);
+        setError('Failed to delete user');
       }
     }
   };

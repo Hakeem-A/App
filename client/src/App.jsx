@@ -101,7 +101,7 @@ function Layout() {
         } />
         
         <Route path="/tech/dashboard" element={
-          <ProtectedRoute role="tech">
+          <ProtectedRoute role="technician">
             <TechDashboard />
           </ProtectedRoute>
         } />
@@ -119,7 +119,7 @@ function Layout() {
         } />
         
         <Route path="/tech/sites" element={
-          <ProtectedRoute role="tech">
+          <ProtectedRoute role="technician">
             <SitesManagementPage />
           </ProtectedRoute>
         } />

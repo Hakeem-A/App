@@ -1,13 +1,31 @@
+import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      react: path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      'react-dom/client': path.resolve(__dirname, 'node_modules/react-dom/client'),
+      'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime'),
+      'react/jsx-dev-runtime': path.resolve(__dirname, 'node_modules/react/jsx-dev-runtime')
+    }
+  },
   server: {
     port: 3000,
     host: '0.0.0.0',
     open: true,
-    allowedHosts: ['care-systems.onrender.com']
+    allowedHosts: ['care-systems.onrender.com'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api')
+      }
+    }
   },
   build: {
     outDir: 'dist',

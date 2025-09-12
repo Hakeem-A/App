@@ -7,18 +7,20 @@ function TicketList({ tickets, searchTerm, onSearchChange, onEdit, onDelete }) {
     const searchLower = searchTerm.toLowerCase();
     return (
       ticket.title.toLowerCase().includes(searchLower) ||
-      ticket.assignedBy.toLowerCase().includes(searchLower) ||
-      ticket.assignedTo.toLowerCase().includes(searchLower) ||
-      ticket.dateAssigned.toLowerCase().includes(searchLower)
+      (ticket.created_by_name || '').toLowerCase().includes(searchLower) ||
+      (ticket.assigned_tech_name || '').toLowerCase().includes(searchLower) ||
+      (ticket.created_at || '').toLowerCase().includes(searchLower)
     );
   });
 
-  const getStatusBadge = (timeCompleted) => {
-    return timeCompleted ? (
-      <Badge bg="success">Completed</Badge>
-    ) : (
-      <Badge bg="warning">In Progress</Badge>
-    );
+  const getStatusBadge = (status, completedAt) => {
+    if (status === 'completed' || completedAt) {
+      return <Badge bg="success">Completed</Badge>;
+    } else if (status === 'in-progress') {
+      return <Badge bg="primary">In Progress</Badge>;
+    } else {
+      return <Badge bg="warning">Pending</Badge>;
+    }
   };
 
   return (
@@ -28,7 +30,7 @@ function TicketList({ tickets, searchTerm, onSearchChange, onEdit, onDelete }) {
           <FaSearch className="position-absolute" style={{ left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6c757d' }} />
           <FormControl
             type="search"
-            placeholder="Search tickets by title, assigned by, assigned to, or date..."
+            placeholder="Search tickets by title, created by, assigned to, or date..."
             className="ps-5"
             value={searchTerm}
             onChange={e => onSearchChange(e.target.value)}
@@ -39,12 +41,12 @@ function TicketList({ tickets, searchTerm, onSearchChange, onEdit, onDelete }) {
         <thead>
           <tr>
             <th>Title</th>
-            <th>Time Assigned</th>
-            <th>Assigned By</th>
+            <th>Priority</th>
+            <th>Created By</th>
             <th>Assigned To</th>
             <th>Status</th>
-            <th>Time Completed</th>
-            <th>Date Assigned</th>
+            <th>Completed At</th>
+            <th>Created At</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -52,12 +54,20 @@ function TicketList({ tickets, searchTerm, onSearchChange, onEdit, onDelete }) {
           {filteredTickets.map(ticket => (
             <tr key={ticket.id}>
               <td>{ticket.title}</td>
-              <td>{ticket.timeAssigned}</td>
-              <td>{ticket.assignedBy}</td>
-              <td>{ticket.assignedTo}</td>
-              <td>{getStatusBadge(ticket.timeCompleted)}</td>
-              <td>{ticket.timeCompleted || '-'}</td>
-              <td>{ticket.dateAssigned}</td>
+              <td>
+                <Badge bg={
+                  ticket.priority === 'critical' ? 'danger' :
+                  ticket.priority === 'high' ? 'warning' :
+                  ticket.priority === 'medium' ? 'info' : 'secondary'
+                }>
+                  {ticket.priority}
+                </Badge>
+              </td>
+              <td>{ticket.created_by_name || 'Unknown'}</td>
+              <td>{ticket.assigned_tech_name || 'Unassigned'}</td>
+              <td>{getStatusBadge(ticket.status, ticket.completed_at)}</td>
+              <td>{ticket.completed_at ? new Date(ticket.completed_at).toLocaleDateString() : '-'}</td>
+              <td>{ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : '-'}</td>
               <td>
                 <Button
                   variant="outline-primary"

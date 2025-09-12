@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Table, Badge } from 'react-bootstrap';
+import { analyticsAPI } from '../../services/api';
 
 function ActivityLog() {
-  // Mock activity data
-  const activities = [
-    { id: 1, user: 'Admin', action: 'Created new ticket', target: 'TKT-001', timestamp: '2025-08-08 10:30:15' },
-    { id: 2, user: 'Agent Sarah', action: 'Updated client info', target: 'Client ABC', timestamp: '2025-08-08 09:45:22' },
-    { id: 3, user: 'Tech Bob', action: 'Resolved ticket', target: 'TKT-005', timestamp: '2025-08-08 09:30:11' },
-    { id: 4, user: 'Admin', action: 'Created new user', target: 'Agent Mike', timestamp: '2025-08-07 16:20:45' },
-    { id: 5, user: 'Tech Alice', action: 'Updated router info', target: 'Router XYZ', timestamp: '2025-08-07 14:15:33' },
-  ];
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    analyticsAPI.getActivityLog().then(res => {
+      setActivities(res.data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
 
   const getActionBadge = (action) => {
     if (action.includes('Created')) return <Badge bg="success">Create</Badge>;
@@ -17,6 +19,10 @@ function ActivityLog() {
     if (action.includes('Resolved')) return <Badge bg="warning">Resolve</Badge>;
     return <Badge bg="secondary">Action</Badge>;
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Card className="mt-4">

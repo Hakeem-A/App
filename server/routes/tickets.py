@@ -86,11 +86,16 @@ def get_ticket(ticket_id):
 def update_ticket(ticket_id):
     try:
         user_id = get_jwt_identity()
+        user = User.query.get(user_id)
         ticket = Ticket.query.get(ticket_id)
-        
+
         if not ticket:
             return jsonify({'error': 'Ticket not found'}), 404
-        
+
+        # Permission check: only assigned technician, admin, or agent can update
+        if user.role == 'technician' and ticket.assigned_tech_id != user_id:
+            return jsonify({'error': 'You can only update your assigned tickets'}), 403
+
         data = request.get_json()
         
         # Update fields
