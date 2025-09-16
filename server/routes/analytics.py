@@ -223,3 +223,5 @@ def get_performance_metrics():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# Ensure analytics endpoints validate input and return clear error messages for 422

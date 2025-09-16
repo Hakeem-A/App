@@ -64,3 +64,5 @@ export const useAsyncOperation = () => {
 
   return { loading, error, execute };
 };
+
+// Ensure useAPI checks for null/invalid responses and handles errors gracefully

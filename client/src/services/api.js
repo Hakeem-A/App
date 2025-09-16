@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+// Check if the base URL is set correctly and if requests include authentication headers (JWT token)
+// Also check error handling for 422 responses
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -32,6 +33,10 @@ api.interceptors.response.use(
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+    } else if (error.response?.status === 422) {
+      // Handle validation errors
+      console.error('Validation error:', error.response.data);
+      alert('Validation error: ' + JSON.stringify(error.response.data.errors));
     }
     return Promise.reject(error);
   }
@@ -99,5 +104,21 @@ export const analyticsAPI = {
     responseType: 'blob',
   }),
 };
+
+// Example fetch function
+export async function fetchData(endpoint, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    }
+  });
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  return response.json();
+}
 
 export default api;

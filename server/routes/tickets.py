@@ -36,7 +36,7 @@ def create_ticket():
         
         required_fields = ['title', 'client_id']
         if not all(field in data for field in required_fields):
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'error': 'Missing required fields'}), 422
         
         ticket = Ticket(
             title=data['title'],
@@ -174,7 +174,7 @@ def add_comment(ticket_id):
         data = request.get_json()
         
         if not data.get('comment'):
-            return jsonify({'error': 'Comment is required'}), 400
+            return jsonify({'error': 'Comment is required'}), 422
         
         ticket = Ticket.query.get(ticket_id)
         if not ticket:
