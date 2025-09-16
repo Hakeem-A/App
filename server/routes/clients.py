@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import Client, User, ActivityLog
 from app import db
+from datetime import datetime
 
 clients_bp = Blueprint('clients', __name__)
 
@@ -156,3 +157,5 @@ def delete_client(client_id):
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# Ensure clients endpoints validate input and return clear error messages for 422

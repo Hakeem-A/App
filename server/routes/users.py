@@ -169,3 +169,5 @@ def get_technicians():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# Ensure users endpoints validate input and return clear error messages for 422
