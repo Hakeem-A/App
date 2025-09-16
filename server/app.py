@@ -7,8 +7,9 @@ from datetime import datetime
 import os
 from config import Config
 
-app = Flask(__name__, static_folder='client_build', static_url_path='/')
+app = Flask(__name__, static_folder='client_build', static_url_path='/', instance_relative_config=True)
 app.config.from_object(Config)
+CORS(app, supports_credentials=True)
 
 # Initialize extensions
 db = SQLAlchemy(app)
@@ -17,7 +18,7 @@ jwt = JWTManager(app)
 # Configure CORS to allow React frontend
 CORS(
     app,
-    resources={r"/api/*": {"origins": "http://localhost:3000"}},
+    resources={r"/api/*": {"origins": "*"}},
     supports_credentials=True,
     methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"]
